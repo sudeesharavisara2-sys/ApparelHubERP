@@ -67,3 +67,72 @@ ApparelHubERP/
         │   ├── POS/
         │   └── Suppliers/
         └── services/                   # Dedicated API communication layer (Axios clients).
+
+--- 
+```
+## 🛠️ Local Setup Instructions
+
+### Prerequisites
+
+Before running the project locally, ensure you have the following installed:
+
+* .NET 8 SDK
+* Node.js (v18 or higher)
+* MySQL Server (or a local/containerized MySQL instance)
+
+### 1️⃣ Database Configuration
+```
+```
+1. Create a new MySQL database named:
+```
+```sql
+CREATE DATABASE apparelhub_db;
+```
+
+2. Update the database connection string in:
+
+```text
+backend/ApparelHubERP.API/appsettings.json
+```
+
+3. Apply Entity Framework migrations (if available) or create the database schema manually.
+
+### 2️⃣ Running the Backend API
+
+Navigate to the API project directory:
+
+```bash
+cd backend/ApparelHubERP.API
+```
+
+Restore dependencies and start the API:
+
+```bash
+dotnet restore
+dotnet run
+```
+
+Once started, the API will be available on a local localhost URL. Swagger API documentation can be accessed through the generated Swagger endpoint.
+
+### 3️⃣ Running the Frontend UI
+
+Navigate to the frontend directory:
+
+```bash
+cd frontend
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+The React application will be available on the local Vite development server URL displayed in the terminal.
+
