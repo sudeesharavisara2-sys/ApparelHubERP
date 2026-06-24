@@ -134,5 +134,4 @@ Start the development server:
 npm run dev
 ```
 
-The React application will be available on the local Vite development server URL displayed in the terminal.
 
