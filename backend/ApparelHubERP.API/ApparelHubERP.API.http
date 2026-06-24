@@ -1,0 +1,6 @@
+@ApparelHubERP.API_HostAddress = http://localhost:5197
+
+GET {{ApparelHubERP.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

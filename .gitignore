@@ -1,0 +1,13 @@
+﻿## Visual Studio Temporary Files
+.vs/
+*.suo
+*.user
+*.slnx.user
+
+## Build Outputs
+bin/
+obj/
+
+## Environment Files
+.env
+.env.local
