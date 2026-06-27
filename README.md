@@ -11,8 +11,8 @@ The application is architected to run entirely on cloud infrastructure using **M
 | Component | Technology | Azure Cloud Service |
 | :--- | :--- | :--- |
 | **Frontend UI** | React, Vite, Tailwind CSS | **Azure Static Web Apps** (Free Tier) |
-| **Backend API** | ASP.NET Core Web API (.NET 8) | **Azure App Service** (Linux Runtime) |
-| **Database** | MySQL | **Azure Database for MySQL Flexible Server** |
+| **Backend API** | ASP.NET Core Web API (**.NET 10**) | Azure App Service |
+| **Database** | Microsoft SQL Server | Azure SQL Database |
 | **Security** | JSON Web Tokens (JWT) | Role-Based Access Control (RBAC) |
 
 ---
@@ -70,51 +70,81 @@ ApparelHubERP/
 
 --- 
 ```
-## 🛠️ Local Setup Instructions
+# 🛠️ Local Setup Instructions
 
-### Prerequisites
+## Prerequisites
 
-Before running the project locally, ensure you have the following installed:
+Before running the project locally, make sure the following software is installed:
 
-* .NET 8 SDK
-* Node.js (v18 or higher)
-* MySQL Server (or a local/containerized MySQL instance)
+* **.NET 10 SDK** (Latest)
+* **Node.js** (v18 or higher)
+* **Microsoft SQL Server** (SQLEXPRESS or LocalDB)
 
-### 1️⃣ Database Configuration
-```
-```
-1. Create a new MySQL database named:
-```
-```sql
-CREATE DATABASE apparelhub_db;
-```
+---
 
-2. Update the database connection string in:
+# 1. Database Configuration
+
+> **No manual database creation is required.**
+
+The application is configured to automatically create the database and apply all migrations during the first run.
+
+Open the following file:
 
 ```text
 backend/ApparelHubERP.API/appsettings.json
 ```
 
-3. Apply Entity Framework migrations (if available) or create the database schema manually.
+Verify or update the connection string if necessary.
 
-### 2️⃣ Running the Backend API
-
-Navigate to the API project directory:
-
-```bash
-cd backend/ApparelHubERP.API
+```json
+"ConnectionStrings": {
+  "DefaultConnection": "Server=.\\SQLEXPRESS;Database=apparelhub_db;Trusted_Connection=True;TrustServerCertificate=True;"
+}
 ```
 
-Restore dependencies and start the API:
+---
+
+# 2. Running the Backend API
+
+## Option A — Visual Studio (Recommended)
+
+1. Open **ApparelHubERP.slnx** in Visual Studio.
+2. Right-click **ApparelHubERP.API**.
+3. Select **Set as Startup Project**.
+4. Press **Ctrl + F5** (or click **Start**).
+
+The application will:
+
+* Create the database automatically
+* Apply EF Core migrations
+* Seed initial data (if available)
+* Launch Swagger UI in your default browser
+
+---
+
+## Option B — Command Line (CLI)
+
+From the project root directory, run:
 
 ```bash
-dotnet restore
-dotnet run
+dotnet run --project backend/ApparelHubERP.API/ApparelHubERP.API.csproj
 ```
 
-Once started, the API will be available on a local localhost URL. Swagger API documentation can be accessed through the generated Swagger endpoint.
+If everything is configured correctly, the application will automatically:
 
-### 3️⃣ Running the Frontend UI
+* Create the database
+* Apply migrations
+* Start the API server
+
+Swagger UI will be available at:
+
+```text
+https://localhost:<port>/
+```
+
+---
+
+# 3. Running the Frontend
 
 Navigate to the frontend directory:
 
@@ -134,4 +164,34 @@ Start the development server:
 npm run dev
 ```
 
+The React application will be available at:
 
+```text
+http://localhost:5173
+```
+
+*(Port may vary depending on your local configuration.)*
+
+---
+
+# Project Structure
+
+```text
+ApparelHubERP
+│
+├── backend
+│   └── ApparelHubERP.API
+│
+├── frontend
+│
+└── README.md
+```
+
+---
+
+# Notes
+
+* Ensure SQL Server (**SQLEXPRESS** or **LocalDB**) is running before starting the backend.
+* No manual database or table creation is required.
+* On the first run, the application automatically creates the database and applies all Entity Framework Core migrations.
+* If you change the connection string, restart the backend application.
