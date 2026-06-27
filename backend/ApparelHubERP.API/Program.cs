@@ -1,39 +1,41 @@
-using System.Diagnostics;
-
 var builder = WebApplication.CreateBuilder(args);
 
-// Force the environment to Development mode
-builder.Environment.EnvironmentName = Environments.Development;
-
-// Lock the application port to 5197
-builder.WebHost.UseUrls("http://localhost:5197");
-
-builder.Services.AddControllers();
+// Add services to the container.
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/openapi/v1.json", "ApparelHubERP API v1");
-    });
-
-    // Automatically open the default browser when the app starts
-    Task.Run(() => {
-        Thread.Sleep(1000); // Wait 1 second for the server to spin up
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = "http://localhost:5197/swagger",
-            UseShellExecute = true
-        });
-    });
 }
 
 app.UseHttpsRedirection();
-app.UseAuthorization();
-app.MapControllers();
+
+var summaries = new[]
+{
+    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+};
+
+app.MapGet("/weatherforecast", () =>
+{
+    var forecast =  Enumerable.Range(1, 5).Select(index =>
+        new WeatherForecast
+        (
+            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+            Random.Shared.Next(-20, 55),
+            summaries[Random.Shared.Next(summaries.Length)]
+        ))
+        .ToArray();
+    return forecast;
+})
+.WithName("GetWeatherForecast");
 
 app.Run();
+
+record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+{
+    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+}
