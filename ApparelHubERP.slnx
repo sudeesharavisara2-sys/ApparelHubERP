@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/backend/">
+    <Project Path="backend/ApparelHubERP.API/ApparelHubERP.API.csproj" />
+    <Project Path="backend/ApparelHubERP.Core/ApparelHubERP.Core.csproj" />
+    <Project Path="backend/ApparelHubERP.Infrastructure/ApparelHubERP.Infrastructure.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,15 @@
+﻿using Microsoft.EntityFrameworkCore;
+using ApparelHubERP.Core.Entities;
+
+namespace ApparelHubERP.Infrastructure.Data
+{
+    public class ApparelHubERPContext : DbContext
+    {
+        public ApparelHubERPContext(DbContextOptions<ApparelHubERPContext> options) : base(options)
+        {
+        }
+
+        // මේකෙන් තමයි SQL Server වල Employees කියලා ටේබල් එකක් හැදෙන්නේ
+        public DbSet<Employee> Employees { get; set; }
+    }
+}
