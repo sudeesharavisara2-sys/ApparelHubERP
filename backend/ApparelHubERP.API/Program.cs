@@ -2,6 +2,11 @@ using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using ApparelHubERP.Infrastructure.Data;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using ApparelHubERP.Core.Services;
+using ApparelHubERP.Core.Interfaces.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,9 +14,35 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApparelHubERPContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// ✅ JWT Authentication එක add කරන්න
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not found")))
+        };
+    });
+
+builder.Services.AddAuthorization();
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
+
+// ✅ IAuthService register කරන්න
+builder.Services.AddScoped<IAuthService, AuthService>(provider =>
+{
+    var context = provider.GetRequiredService<ApparelHubERPContext>();
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    return new AuthService(context, configuration);
+});
 
 var app = builder.Build();
 
@@ -44,6 +75,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// ✅ Authentication & Authorization middleware එක add කරන්න
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
 
 // ---- AUTOMATIC DATABASE CREATION & MIGRATION ----
@@ -57,6 +93,33 @@ using (var scope = app.Services.CreateScope())
         // Pending මයිග්‍රේෂන් බලලා apparelhub_db ඩේටාබේස් එක මැෂින් එකේ ඔටෝ ක්‍රියේට් කරයි
         context.Database.Migrate();
         Console.WriteLine("--> Database & Tables created successfully on the local machine!");
+
+        // ✅ SEED TEST USERS
+        if (!context.Users.Any())
+        {
+            context.Users.AddRange(
+                new ApparelHubERP.Core.Entities.User
+                {
+                    Username = "storemanager",
+                    PasswordHash = ApparelHubERP.Core.Services.AuthService.HashPassword("123456"),
+                    Role = "StoreManager"
+                },
+                new ApparelHubERP.Core.Entities.User
+                {
+                    Username = "hr",
+                    PasswordHash = ApparelHubERP.Core.Services.AuthService.HashPassword("123456"),
+                    Role = "HR"
+                },
+                new ApparelHubERP.Core.Entities.User
+                {
+                    Username = "admin",
+                    PasswordHash = ApparelHubERP.Core.Services.AuthService.HashPassword("123456"),
+                    Role = "Admin"
+                }
+            );
+            context.SaveChanges();
+            Console.WriteLine("--> Test users created successfully!");
+        }
     }
     catch (Exception ex)
     {
