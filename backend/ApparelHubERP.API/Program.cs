@@ -44,6 +44,9 @@ builder.Services.AddScoped<IAuthService, AuthService>(provider =>
     return new AuthService(context, configuration);
 });
 
+// ✅ EmailService register කරන්න
+builder.Services.AddScoped<IEmailService, EmailService>();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -102,19 +105,25 @@ using (var scope = app.Services.CreateScope())
                 {
                     Username = "storemanager",
                     PasswordHash = ApparelHubERP.Core.Services.AuthService.HashPassword("123456"),
-                    Role = "StoreManager"
+                    Role = "StoreManager",
+                    Email = "storemanager@test.com",
+                    IsEmailVerified = true
                 },
                 new ApparelHubERP.Core.Entities.User
                 {
                     Username = "hr",
                     PasswordHash = ApparelHubERP.Core.Services.AuthService.HashPassword("123456"),
-                    Role = "HR"
+                    Role = "HR",
+                    Email = "hr@test.com",
+                    IsEmailVerified = true
                 },
                 new ApparelHubERP.Core.Entities.User
                 {
                     Username = "admin",
                     PasswordHash = ApparelHubERP.Core.Services.AuthService.HashPassword("123456"),
-                    Role = "Admin"
+                    Role = "Admin",
+                    Email = "admin@test.com",
+                    IsEmailVerified = true
                 }
             );
             context.SaveChanges();
