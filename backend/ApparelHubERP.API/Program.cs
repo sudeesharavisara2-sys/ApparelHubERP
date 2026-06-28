@@ -1,7 +1,12 @@
 using System.Diagnostics;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using ApparelHubERP.Infrastructure.Data;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using ApparelHubERP.Core.Services;
+using ApparelHubERP.Core.Interfaces.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,9 +14,38 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApparelHubERPContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// ✅ JWT Authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not found")))
+        };
+    });
+
+builder.Services.AddAuthorization();
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
+
+// ✅ IAuthService register
+builder.Services.AddScoped<IAuthService, AuthService>(provider =>
+{
+    var context = provider.GetRequiredService<ApparelHubERPContext>();
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    return new AuthService(context, configuration);
+});
+
+// ✅ IEmailService register
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 var app = builder.Build();
 
@@ -36,7 +70,7 @@ if (app.Environment.IsDevelopment())
             Process.Start(new ProcessStartInfo
             {
                 FileName = url,
-                UseShellExecute = true   
+                UseShellExecute = true
             });
         }
         catch { /* The app doesn't crash even if the browser isn't open. */ }
@@ -44,6 +78,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// ✅ Authentication & Authorization middleware
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
 
 // ---- AUTOMATIC DATABASE CREATION & MIGRATION ----
@@ -57,6 +96,39 @@ using (var scope = app.Services.CreateScope())
         // Check for pending migrations and auto-create the apparelhub_db database on the machine.
         context.Database.Migrate();
         Console.WriteLine("--> Database & Tables created successfully on the local machine!");
+
+        // ✅ SEED TEST USERS
+        if (!context.Users.Any())
+        {
+            context.Users.AddRange(
+                new ApparelHubERP.Core.Entities.User
+                {
+                    Username = "storemanager",
+                    PasswordHash = ApparelHubERP.Core.Services.AuthService.HashPassword("123456"),
+                    Role = "StoreManager",
+                    Email = "storemanager@test.com",
+                    IsEmailVerified = true
+                },
+                new ApparelHubERP.Core.Entities.User
+                {
+                    Username = "hr",
+                    PasswordHash = ApparelHubERP.Core.Services.AuthService.HashPassword("123456"),
+                    Role = "HR",
+                    Email = "hr@test.com",
+                    IsEmailVerified = true
+                },
+                new ApparelHubERP.Core.Entities.User
+                {
+                    Username = "admin",
+                    PasswordHash = ApparelHubERP.Core.Services.AuthService.HashPassword("123456"),
+                    Role = "Admin",
+                    Email = "admin@test.com",
+                    IsEmailVerified = true
+                }
+            );
+            context.SaveChanges();
+            Console.WriteLine("--> Test users created successfully!");
+        }
     }
     catch (Exception ex)
     {
