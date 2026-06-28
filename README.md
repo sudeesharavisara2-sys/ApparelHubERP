@@ -187,6 +187,347 @@ ApparelHubERP
 └── README.md
 ```
 
+# 🔐 Authentication & Authorization System
+
+A secure authentication and authorization system built with **ASP.NET Core**, featuring **JWT Authentication**, **Role-Based Access Control**, **Email OTP Verification**, and **Password Recovery**.
+
+---
+
+## ✨ Features
+
+* ✅ User Registration with Email OTP Verification
+* ✅ JWT Token Authentication
+* ✅ Role-Based Access Control (5 Roles)
+* ✅ Forgot Password using Email OTP
+* ✅ Reset Password
+* ✅ Email Notifications with Priority Headers
+
+---
+
+## 👥 Available Roles
+
+| Role           | Description               | Dashboard URL              |
+| -------------- | ------------------------- | -------------------------- |
+| `StoreManager` | Store Manager Dashboard   | `/dashboard/store-manager` |
+| `HR`           | Human Resources Dashboard | `/dashboard/hr`            |
+| `ManagerBoard` | Manager Board Dashboard   | `/dashboard/manager-board` |
+| `Supplier`     | Supplier Dashboard        | `/dashboard/supplier`      |
+| `Customer`     | Customer Dashboard        | `/dashboard/customer`      |
+
+---
+
+# 📌 API Endpoints
+
+| Method | Endpoint                     | Description                 |
+| ------ | ---------------------------- | --------------------------- |
+| `POST` | `/api/Auth/register`         | Register a new user         |
+| `POST` | `/api/Auth/verify-otp`       | Verify email using OTP      |
+| `POST` | `/api/Auth/login`            | Login and receive JWT token |
+| `POST` | `/api/Auth/forgot-password`  | Request password reset OTP  |
+| `POST` | `/api/Auth/verify-reset-otp` | Verify password reset OTP   |
+| `POST` | `/api/Auth/reset-password`   | Reset password              |
+
+---
+
+# 📝 API Documentation
+
+## 1️⃣ Register User
+
+**Endpoint**
+
+```http
+POST /api/Auth/register
+```
+
+### Request Body
+
+```json
+{
+  "username": "john_doe",
+  "password": "SecurePass123",
+  "role": "StoreManager",
+  "email": "john.doe@gmail.com",
+  "phone": "0712345678",
+  "fullName": "John Doe"
+}
+```
+
+### Success Response (200 OK)
+
+```json
+{
+  "message": "Registration successful! Please verify your email to login."
+}
+```
+
+### Error Response (400 Bad Request)
+
+```json
+{
+  "message": "Username or Email already exists, or invalid role"
+}
+```
+
+---
+
+## 2️⃣ Verify Email OTP
+
+**Endpoint**
+
+```http
+POST /api/Auth/verify-otp
+```
+
+### Request Body
+
+```json
+{
+  "email": "john.doe@gmail.com",
+  "otpCode": "123456"
+}
+```
+
+### Success Response (200 OK)
+
+```json
+{
+  "message": "Email verified successfully! You can now login."
+}
+```
+
+### Error Response (400 Bad Request)
+
+```json
+{
+  "message": "Invalid OTP code or OTP expired"
+}
+```
+
+---
+
+## 3️⃣ Login
+
+**Endpoint**
+
+```http
+POST /api/Auth/login
+```
+
+### Request Body
+
+```json
+{
+  "username": "john_doe",
+  "password": "SecurePass123"
+}
+```
+
+### Success Response (200 OK)
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "username": "john_doe",
+  "role": "StoreManager",
+  "dashboardUrl": "/dashboard/store-manager"
+}
+```
+
+### Error Response (401 Unauthorized)
+
+```json
+{
+  "message": "Invalid username, password, or email not verified"
+}
+```
+
+---
+
+## 4️⃣ Forgot Password
+
+**Endpoint**
+
+```http
+POST /api/Auth/forgot-password
+```
+
+### Request Body
+
+```json
+{
+  "email": "john.doe@gmail.com"
+}
+```
+
+### Success Response (200 OK)
+
+```json
+{
+  "message": "Password reset OTP sent to your email. Please check your inbox."
+}
+```
+
+### Error Response (400 Bad Request)
+
+```json
+{
+  "message": "Email not found or OTP sending failed"
+}
+```
+
+---
+
+## 5️⃣ Verify Reset OTP
+
+**Endpoint**
+
+```http
+POST /api/Auth/verify-reset-otp
+```
+
+### Request Body
+
+```json
+{
+  "email": "john.doe@gmail.com",
+  "otpCode": "654321"
+}
+```
+
+### Success Response (200 OK)
+
+```json
+{
+  "message": "OTP verified successfully. You can now reset your password."
+}
+```
+
+### Error Response (400 Bad Request)
+
+```json
+{
+  "message": "Invalid OTP code or OTP expired"
+}
+```
+
+---
+
+## 6️⃣ Reset Password
+
+**Endpoint**
+
+```http
+POST /api/Auth/reset-password
+```
+
+### Request Body
+
+```json
+{
+  "email": "john.doe@gmail.com",
+  "newPassword": "NewSecurePass456"
+}
+```
+
+### Success Response (200 OK)
+
+```json
+{
+  "message": "Password reset successfully! You can now login with your new password."
+}
+```
+
+### Error Response (400 Bad Request)
+
+```json
+{
+  "message": "Email not found or password reset failed"
+}
+```
+
+---
+
+# 📧 Email Configuration
+
+Add the following configuration to your **appsettings.json** file.
+
+```json
+"EmailSettings": {
+  "SmtpServer": "smtp.gmail.com",
+  "SmtpPort": 587,
+  "SenderEmail": "your-email@gmail.com",
+  "SenderPassword": "your-16-digit-app-password",
+  "UseStartTls": true
+}
+```
+
+## Gmail App Password Setup
+
+1. Enable **2-Step Verification** on your Google Account.
+2. Open **Google Account → App Passwords**.
+3. Generate a new App Password for your application.
+4. Copy the generated **16-character App Password**.
+5. Paste it into `SenderPassword` in `appsettings.json`.
+
+---
+
+# 🔑 JWT Authentication
+
+All protected API endpoints require a valid JWT token.
+
+### Authorization Header
+
+```http
+Authorization: Bearer <your_jwt_token>
+```
+
+### JWT Claims
+
+| Claim            | Description                                                    |
+| ---------------- | -------------------------------------------------------------- |
+| `nameidentifier` | User ID                                                        |
+| `name`           | Username                                                       |
+| `role`           | User Role (StoreManager, HR, ManagerBoard, Supplier, Customer) |
+
+---
+
+# 🔒 Authentication Flow
+
+```text
+Register
+    │
+    ▼
+Email OTP Verification
+    │
+    ▼
+Login
+    │
+    ▼
+Receive JWT Token
+    │
+    ▼
+Access Protected APIs
+    │
+    ▼
+Role-Based Dashboard
+```
+
+---
+
+## 🚀 Tech Stack
+
+* ASP.NET Core Web API
+* Entity Framework Core
+* Microsoft SQL Server
+* JWT Authentication
+* SMTP Email Service
+* BCrypt Password Hashing
+
+
+
+
+
+
 ---
 
 # Notes
