@@ -48,7 +48,7 @@ public class AuthController : ControllerBase
         return Ok(new { message = "Email verified successfully! You can now login." });
     }
 
-    // ✅ Forgot Password - OTP එක Email එකට send කරන්න
+    // ✅ Forgot Password - Send OTP to Email
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto forgotPasswordDto)
     {
@@ -72,7 +72,7 @@ public class AuthController : ControllerBase
         return Ok(new { message = "OTP verified successfully. You can now reset your password." });
     }
 
-    // ✅ Reset Password - New Password set කරන්න
+    // ✅ Reset Password - Set a new password
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
     {
