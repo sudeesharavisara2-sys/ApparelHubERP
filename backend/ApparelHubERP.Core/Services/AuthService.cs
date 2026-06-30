@@ -15,12 +15,14 @@ public class AuthService : IAuthService
 {
     private readonly DbContext _context;
     private readonly IConfiguration _configuration;
+    private readonly IEmailService _emailService;
 
     // Injecting generic DbContext instead of hardcoded ApparelHubERPContext for better abstraction
     public AuthService(DbContext context, IConfiguration configuration)
     {
         _context = context;
         _configuration = configuration;
+        _emailService = emailService;
     }
 
     public async Task<LoginResponseDto?> LoginAsync(LoginDto loginDto)
@@ -40,14 +42,13 @@ public class AuthService : IAuthService
             return null;
 
         var token = GenerateJwtToken(user);
-        string dashboardUrl = GetDashboardUrl(user.Role);
 
         return new LoginResponseDto
         {
             Token = token,
             Username = user.Username,
             Role = user.Role,
-            DashboardUrl = dashboardUrl
+            DashboardUrl = GetDashboardUrl(user.Role)
         };
     }
 
@@ -70,12 +71,12 @@ public class AuthService : IAuthService
 
         // Validate if the assigned role is valid
         var validRoles = new[] { "StoreManager", "HR", "ManagerBoard", "Supplier", "Customer" };
+
         if (!validRoles.Contains(registerDto.Role))
             return false;
 
         // ✅ Generate OTP and set 5-minute expiration
         var otp = GenerateOtp();
-        var otpExpiry = DateTime.UtcNow.AddMinutes(5);
 
         var user = new User
         {
@@ -87,7 +88,7 @@ public class AuthService : IAuthService
             FullName = registerDto.FullName,
             IsEmailVerified = false,
             OtpCode = otp,
-            OtpExpiry = otpExpiry,
+            OtpExpiry = DateTime.UtcNow.AddMinutes(5),
             CreatedAt = DateTime.UtcNow
         };
 
@@ -97,8 +98,7 @@ public class AuthService : IAuthService
         // ✅ Send Registration OTP via Email
         try
         {
-            var emailService = new EmailService(_configuration);
-            await emailService.SendOtpEmailAsync(user.Email, otp);
+            await _emailService.SendOtpEmailAsync(user.Email, otp);
         }
         catch (Exception ex)
         {
@@ -153,18 +153,16 @@ public class AuthService : IAuthService
 
         // Generate OTP and set 5-minute expiration for password reset
         var otp = GenerateOtp();
-        var otpExpiry = DateTime.UtcNow.AddMinutes(5);
 
         user.ResetOtpCode = otp;
-        user.ResetOtpExpiry = otpExpiry;
+        user.ResetOtpExpiry = DateTime.UtcNow.AddMinutes(5);
 
         await _context.SaveChangesAsync();
 
         // ✅ Send Password Reset OTP via Email
         try
         {
-            var emailService = new EmailService(_configuration);
-            await emailService.SendResetPasswordOtpEmailAsync(user.Email, otp);
+            await _emailService.SendResetPasswordOtpEmailAsync(user.Email, otp);
         }
         catch (Exception ex)
         {
@@ -220,16 +218,19 @@ public class AuthService : IAuthService
     // ✅ Helper method to generate a secure 6-digit numeric OTP string
     private string GenerateOtp()
     {
-        var random = new Random();
-        return random.Next(100000, 999999).ToString();
+        return RandomNumberGenerator.GetInt32(100000, 999999).ToString();
     }
 
     // ✅ Generates a JWT token containing user identity details and roles
     private string GenerateJwtToken(User user)
     {
-        var securityKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not found")));
+        var jwtKey = _configuration["Jwt:Key"]
+            ?? throw new InvalidOperationException("JWT Key not found");
+
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+        var expiryMinutes = Convert.ToDouble(_configuration["Jwt:ExpiryMinutes"] ?? "60");
 
         var claims = new[]
         {
@@ -242,8 +243,7 @@ public class AuthService : IAuthService
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.Now.AddMinutes(
-                Convert.ToDouble(_configuration["Jwt:ExpiryMinutes"])),
+            expires: DateTime.UtcNow.AddMinutes(expiryMinutes),
             signingCredentials: credentials
         );
 
