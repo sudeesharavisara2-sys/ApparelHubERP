@@ -13,9 +13,24 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApparelHubERPContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// IMPORTANT FIX: AuthService constructor needs DbContext
+// Allows AuthService to inject generic DbContext
 builder.Services.AddScoped<DbContext>(provider =>
     provider.GetRequiredService<ApparelHubERPContext>());
+
+// Services
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+// CORS for React frontend
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FrontendPolicy", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 // JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -40,10 +55,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// ✅ Required for Endpoints in .NET 8 / .NET 9
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// ✅ SwaggerGen Config with Server URLs and Security Lock
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
@@ -53,15 +67,10 @@ builder.Services.AddSwaggerGen(options =>
         Description = "Official API documentation for the ApparelHub ERP System."
     });
 
-    // Adding Server Addresses (HTTP & HTTPS)
-    options.AddServer(new Microsoft.OpenApi.Models.OpenApiServer { Url = "https://localhost:7270", Description = "Secure Development Server (HTTPS)" });
-    options.AddServer(new Microsoft.OpenApi.Models.OpenApiServer { Url = "http://localhost:5024", Description = "Local Development Server (HTTP)" });
-
-    // Adding JWT Bearer Auth to Swagger (For the Lock Icon)
     options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = "Please enter JWT with Bearer into field. Example: 'Bearer {token}'",
+        Description = "Enter JWT like: Bearer {token}",
         Name = "Authorization",
         Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
         BearerFormat = "JWT",
@@ -79,24 +88,10 @@ builder.Services.AddSwaggerGen(options =>
                     Id = "Bearer"
                 }
             },
-            new string[]{}
+            Array.Empty<string>()
         }
     });
 });
-
-builder.Services.AddControllers();
-
-// ✅ IAuthService registration
-builder.Services.AddScoped<IAuthService, AuthService>(provider =>
-{
-    var context = provider.GetRequiredService<ApparelHubERPContext>();
-    var configuration = provider.GetRequiredService<IConfiguration>();
-    return new AuthService(context, configuration);
-});
-
-// ✅ IEmailService registration
-builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 
@@ -106,14 +101,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "ApparelHubERP API v1");
-        options.RoutePrefix = string.Empty; // Set Swagger UI as the application root
+        options.RoutePrefix = string.Empty;
     });
 
-    // ✅ Auto-opens the browser when the server starts
     var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
     lifetime.ApplicationStarted.Register(() =>
     {
         var url = app.Urls.FirstOrDefault() ?? "https://localhost:7270";
+
         try
         {
             Process.Start(new ProcessStartInfo
@@ -122,26 +117,32 @@ if (app.Environment.IsDevelopment())
                 UseShellExecute = true
             });
         }
-        catch { /* Application won't crash even if the browser fails to open */ }
+        catch
+        {
+            // Ignore browser launch errors
+        }
     });
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("FrontendPolicy");
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
-// ---- AUTOMATIC DATABASE CREATION & MIGRATION ----
+// Automatic database migration and seed users
 using (var scope = app.Services.CreateScope())
 {
     try
     {
-        var context = services.GetRequiredService<ApparelHubERPContext>();
+        var context = scope.ServiceProvider.GetRequiredService<ApparelHubERPContext>();
+
         context.Database.Migrate();
 
-        Console.WriteLine("--> Database & Tables created successfully!");
+        Console.WriteLine("--> Database & tables created successfully.");
 
         if (!context.Users.Any())
         {
@@ -176,7 +177,7 @@ using (var scope = app.Services.CreateScope())
             );
 
             context.SaveChanges();
-            Console.WriteLine("--> Test users created successfully!");
+            Console.WriteLine("--> Test users created successfully.");
         }
     }
     catch (Exception ex)
