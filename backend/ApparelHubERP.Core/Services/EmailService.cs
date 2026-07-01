@@ -14,6 +14,7 @@ public class EmailService : IEmailService
         _configuration = configuration;
     }
 
+    // ✅ Sends an verification OTP code during user registration
     public async Task<bool> SendOtpEmailAsync(string toEmail, string otpCode)
     {
         string subject = "ApparelHubERP - Email Verification OTP";
@@ -45,7 +46,7 @@ public class EmailService : IEmailService
         return await SendEmailAsync(toEmail, subject, body);
     }
 
-    // ✅ Reset Password OTP Email Method එක
+    // ✅ Sends an OTP code specifically for the password reset workflow
     public async Task<bool> SendResetPasswordOtpEmailAsync(string toEmail, string otpCode)
     {
         string subject = "ApparelHubERP - Password Reset OTP";
@@ -78,6 +79,7 @@ public class EmailService : IEmailService
         return await SendEmailAsync(toEmail, subject, body);
     }
 
+    // ✅ Core helper method to handle the SMTP client connection and delivery logic
     public async Task<bool> SendEmailAsync(string toEmail, string subject, string body)
     {
         try
@@ -104,7 +106,7 @@ public class EmailService : IEmailService
             };
             mailMessage.To.Add(toEmail);
 
-            // ✅ Priority Headers එකතු කරන්න (Email Notification වැඩි කිරීමට)
+            // ✅ Add priority headers to ensure rapid notification delivery
             mailMessage.Headers.Add("X-Priority", "1");
             mailMessage.Headers.Add("X-MSMail-Priority", "High");
             mailMessage.Headers.Add("Importance", "High");
