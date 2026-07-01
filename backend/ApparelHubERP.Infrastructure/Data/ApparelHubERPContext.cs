@@ -14,5 +14,9 @@ namespace ApparelHubERP.Infrastructure.Data
 
         // ✅ Login සඳහා Users ටේබල් එක add කරන්න
         public DbSet<User> Users { get; set; }
+
+        // ✅ Hansi - Attendance සහ Payroll ටේබල් එකතු කරන්න
+        public DbSet<AttendanceRecord> AttendanceRecords { get; set; }
+        public DbSet<Payroll> Payrolls { get; set; }
     }
 }

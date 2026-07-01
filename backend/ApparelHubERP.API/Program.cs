@@ -47,6 +47,13 @@ builder.Services.AddScoped<IAuthService, AuthService>(provider =>
 // ✅ IEmailService register
 builder.Services.AddScoped<IEmailService, EmailService>();
 
+// ✅ IAttendanceService register - Hansi (Member 03)
+builder.Services.AddScoped<IAttendanceService, AttendanceService>(provider =>
+{
+    var context = provider.GetRequiredService<ApparelHubERPContext>();
+    return new AttendanceService(context);
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -86,14 +93,12 @@ app.UseAuthorization();
 app.MapControllers();
 
 // ---- AUTOMATIC DATABASE CREATION & MIGRATION ----
-// To auto-create the database and tables the first time the project is launched:
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
         var context = services.GetRequiredService<ApparelHubERPContext>();
-        // Check for pending migrations and auto-create the apparelhub_db database on the machine.
         context.Database.Migrate();
         Console.WriteLine("--> Database & Tables created successfully on the local machine!");
 
