@@ -32,11 +32,54 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization();
-builder.Services.AddOpenApi();
-builder.Services.AddSwaggerGen();
+
+// ✅ Required for Endpoints in .NET 8 / .NET 9
+builder.Services.AddEndpointsApiExplorer();
+
+// ✅ SwaggerGen Config with Server URLs and Security Lock
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Version = "v1",
+        Title = "ApparelHubERP API",
+        Description = "Official API documentation for the ApparelHub ERP System."
+    });
+
+    // Adding Server Addresses (HTTP & HTTPS)
+    options.AddServer(new Microsoft.OpenApi.Models.OpenApiServer { Url = "https://localhost:7270", Description = "Secure Development Server (HTTPS)" });
+    options.AddServer(new Microsoft.OpenApi.Models.OpenApiServer { Url = "http://localhost:5024", Description = "Local Development Server (HTTP)" });
+
+    // Adding JWT Bearer Auth to Swagger (For the Lock Icon)
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Please enter JWT with Bearer into field. Example: 'Bearer {token}'",
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        BearerFormat = "JWT",
+        Scheme = "Bearer"
+    });
+
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[]{}
+        }
+    });
+});
+
 builder.Services.AddControllers();
 
-// ✅ IAuthService register
+// ✅ IAuthService registration
 builder.Services.AddScoped<IAuthService, AuthService>(provider =>
 {
     var context = provider.GetRequiredService<ApparelHubERPContext>();
@@ -44,27 +87,25 @@ builder.Services.AddScoped<IAuthService, AuthService>(provider =>
     return new AuthService(context, configuration);
 });
 
-// ✅ IEmailService register
+// ✅ IEmailService registration
 builder.Services.AddScoped<IEmailService, EmailService>();
 
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-
     app.UseSwagger();
     app.UseSwaggerUI(options =>
     {
-        options.SwaggerEndpoint("/openapi/v1.json", "ApparelHubERP API v1");
-        options.RoutePrefix = string.Empty;
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "ApparelHubERP API v1");
+        options.RoutePrefix = string.Empty; // Set Swagger UI as the application root
     });
 
-    // ✅ The code that auto-opens the browser when the server starts
+    // ✅ Auto-opens the browser when the server starts
     var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
     lifetime.ApplicationStarted.Register(() =>
     {
-        var url = app.Urls.FirstOrDefault() ?? "https://localhost:7001";
+        var url = app.Urls.FirstOrDefault() ?? "https://localhost:7270";
         try
         {
             Process.Start(new ProcessStartInfo
@@ -73,7 +114,7 @@ if (app.Environment.IsDevelopment())
                 UseShellExecute = true
             });
         }
-        catch { /* The app doesn't crash even if the browser isn't open. */ }
+        catch { /* Application won't crash even if the browser fails to open */ }
     });
 }
 
@@ -86,14 +127,12 @@ app.UseAuthorization();
 app.MapControllers();
 
 // ---- AUTOMATIC DATABASE CREATION & MIGRATION ----
-// To auto-create the database and tables the first time the project is launched:
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
         var context = services.GetRequiredService<ApparelHubERPContext>();
-        // Check for pending migrations and auto-create the apparelhub_db database on the machine.
         context.Database.Migrate();
         Console.WriteLine("--> Database & Tables created successfully on the local machine!");
 
@@ -136,29 +175,4 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// --- Default WeatherForecast Endpoint (currently kept for testing only) ---
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
