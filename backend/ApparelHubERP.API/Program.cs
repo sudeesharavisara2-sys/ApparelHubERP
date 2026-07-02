@@ -32,16 +32,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization();
-builder.Services.AddOpenApi();
+//builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 
-// ✅ IAuthService register
-builder.Services.AddScoped<IAuthService, AuthService>(provider =>
+// ✅ IInventoryService register
+builder.Services.AddScoped<IInventoryService, InventoryService>(provider =>
 {
     var context = provider.GetRequiredService<ApparelHubERPContext>();
-    var configuration = provider.GetRequiredService<IConfiguration>();
-    return new AuthService(context, configuration);
+    return new InventoryService(context);
 });
 
 // ✅ IEmailService register
@@ -51,13 +50,14 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    // app.MapOpenApi();
 
     app.UseSwagger();
-    app.UseSwaggerUI(options =>
+
+    app.UseSwaggerUI(c =>
     {
-        options.SwaggerEndpoint("/openapi/v1.json", "ApparelHubERP API v1");
-        options.RoutePrefix = string.Empty;
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "ApparelHubERP API v1");
+        c.RoutePrefix = string.Empty;
     });
 
     // ✅ The code that auto-opens the browser when the server starts
