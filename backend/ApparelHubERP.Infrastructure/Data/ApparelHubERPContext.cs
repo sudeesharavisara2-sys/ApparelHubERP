@@ -9,10 +9,12 @@ namespace ApparelHubERP.Infrastructure.Data
         {
         }
 
-        // මේකෙන් තමයි SQL Server වල Employees කියලා ටේබල් එකක් හැදෙන්නේ
         public DbSet<Employee> Employees { get; set; }
 
-        // ✅ Login සඳහා Users ටේබල් එක add කරන්න
+        // Login users
         public DbSet<User> Users { get; set; }
+
+        // Inventory products
+        public DbSet<Product> Products { get; set; }
     }
 }

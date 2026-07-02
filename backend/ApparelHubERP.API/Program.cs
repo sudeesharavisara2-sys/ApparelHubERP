@@ -47,10 +47,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization();
+<<<<<<< HEAD
 
+=======
+//builder.Services.AddOpenApi();
+builder.Services.AddSwaggerGen();
+>>>>>>> origin/dev-yathushiha
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+<<<<<<< HEAD
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
@@ -59,6 +65,14 @@ builder.Services.AddSwaggerGen(options =>
         Title = "ApparelHubERP API",
         Description = "Official API documentation for the ApparelHub ERP System."
     });
+=======
+// ✅ IInventoryService register
+builder.Services.AddScoped<IInventoryService, InventoryService>(provider =>
+{
+    var context = provider.GetRequiredService<ApparelHubERPContext>();
+    return new InventoryService(context);
+});
+>>>>>>> origin/dev-yathushiha
 
     options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
@@ -90,11 +104,22 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
+<<<<<<< HEAD
+=======
+    // app.MapOpenApi();
+
+>>>>>>> origin/dev-yathushiha
     app.UseSwagger();
-    app.UseSwaggerUI(options =>
+
+    app.UseSwaggerUI(c =>
     {
+<<<<<<< HEAD
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "ApparelHubERP API v1");
         options.RoutePrefix = string.Empty;
+=======
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "ApparelHubERP API v1");
+        c.RoutePrefix = string.Empty;
+>>>>>>> origin/dev-yathushiha
     });
 
     var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
