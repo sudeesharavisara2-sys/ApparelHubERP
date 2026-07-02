@@ -1,20 +1,33 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
-using ApparelHubERP.Infrastructure.Data;
-using Swashbuckle.AspNetCore.SwaggerGen;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using ApparelHubERP.Core.Services;
 using ApparelHubERP.Core.Interfaces.Services;
+using ApparelHubERP.Core.Services;
+using ApparelHubERP.Infrastructure.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Connecting the DbContext to SQL Server and the Connection String
 builder.Services.AddDbContext<ApparelHubERPContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ✅ JWT Authentication
+builder.Services.AddScoped<DbContext>(provider =>
+    provider.GetRequiredService<ApparelHubERPContext>());
+
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FrontendPolicy", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -27,16 +40,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not found")))
+                Encoding.UTF8.GetBytes(
+                    builder.Configuration["Jwt:Key"]
+                    ?? throw new InvalidOperationException("JWT Key not found")))
         };
     });
 
 builder.Services.AddAuthorization();
 
-// ✅ Required for Endpoints in .NET 8 / .NET 9
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// ✅ SwaggerGen Config with Server URLs and Security Lock
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
@@ -46,15 +60,10 @@ builder.Services.AddSwaggerGen(options =>
         Description = "Official API documentation for the ApparelHub ERP System."
     });
 
-    // Adding Server Addresses (HTTP & HTTPS)
-    options.AddServer(new Microsoft.OpenApi.Models.OpenApiServer { Url = "https://localhost:7270", Description = "Secure Development Server (HTTPS)" });
-    options.AddServer(new Microsoft.OpenApi.Models.OpenApiServer { Url = "http://localhost:5024", Description = "Local Development Server (HTTP)" });
-
-    // Adding JWT Bearer Auth to Swagger (For the Lock Icon)
     options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = "Please enter JWT with Bearer into field. Example: 'Bearer {token}'",
+        Description = "Enter JWT like: Bearer {token}",
         Name = "Authorization",
         Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
         BearerFormat = "JWT",
@@ -72,23 +81,10 @@ builder.Services.AddSwaggerGen(options =>
                     Id = "Bearer"
                 }
             },
-            new string[]{}
+            Array.Empty<string>()
         }
     });
 });
-
-builder.Services.AddControllers();
-
-// ✅ IAuthService registration
-builder.Services.AddScoped<IAuthService, AuthService>(provider =>
-{
-    var context = provider.GetRequiredService<ApparelHubERPContext>();
-    var configuration = provider.GetRequiredService<IConfiguration>();
-    return new AuthService(context, configuration);
-});
-
-// ✅ IEmailService registration
-builder.Services.AddScoped<IEmailService, EmailService>();
 
 var app = builder.Build();
 
@@ -98,14 +94,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "ApparelHubERP API v1");
-        options.RoutePrefix = string.Empty; // Set Swagger UI as the application root
+        options.RoutePrefix = string.Empty;
     });
 
-    // ✅ Auto-opens the browser when the server starts
     var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
     lifetime.ApplicationStarted.Register(() =>
     {
         var url = app.Urls.FirstOrDefault() ?? "https://localhost:7270";
+
         try
         {
             Process.Start(new ProcessStartInfo
@@ -114,59 +110,110 @@ if (app.Environment.IsDevelopment())
                 UseShellExecute = true
             });
         }
-        catch { /* Application won't crash even if the browser fails to open */ }
+        catch
+        {
+        }
     });
 }
 
 app.UseHttpsRedirection();
 
-// ✅ Authentication & Authorization middleware
+app.UseCors("FrontendPolicy");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
-// ---- AUTOMATIC DATABASE CREATION & MIGRATION ----
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
     try
     {
-        var context = services.GetRequiredService<ApparelHubERPContext>();
-        context.Database.Migrate();
-        Console.WriteLine("--> Database & Tables created successfully on the local machine!");
+        var context = scope.ServiceProvider.GetRequiredService<ApparelHubERPContext>();
 
-        // ✅ SEED TEST USERS
+        context.Database.Migrate();
+
+        Console.WriteLine("--> Database & tables created successfully.");
+
         if (!context.Users.Any())
         {
             context.Users.AddRange(
                 new ApparelHubERP.Core.Entities.User
                 {
+                    Username = "admin",
+                    PasswordHash = AuthService.HashPassword("123456"),
+                    Role = "Admin",
+                    Email = "admin@test.com",
+                    IsEmailVerified = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new ApparelHubERP.Core.Entities.User
+                {
                     Username = "storemanager",
-                    PasswordHash = ApparelHubERP.Core.Services.AuthService.HashPassword("123456"),
+                    PasswordHash = AuthService.HashPassword("123456"),
                     Role = "StoreManager",
                     Email = "storemanager@test.com",
-                    IsEmailVerified = true
+                    IsEmailVerified = true,
+                    CreatedAt = DateTime.UtcNow
                 },
                 new ApparelHubERP.Core.Entities.User
                 {
                     Username = "hr",
-                    PasswordHash = ApparelHubERP.Core.Services.AuthService.HashPassword("123456"),
-                    Role = "HR",
+                    PasswordHash = AuthService.HashPassword("123456"),
+                    Role = "HROfficer",
                     Email = "hr@test.com",
-                    IsEmailVerified = true
+                    IsEmailVerified = true,
+                    CreatedAt = DateTime.UtcNow
                 },
                 new ApparelHubERP.Core.Entities.User
                 {
-                    Username = "admin",
-                    PasswordHash = ApparelHubERP.Core.Services.AuthService.HashPassword("123456"),
-                    Role = "Admin",
-                    Email = "admin@test.com",
-                    IsEmailVerified = true
+                    Username = "payroll",
+                    PasswordHash = AuthService.HashPassword("123456"),
+                    Role = "PayrollOfficer",
+                    Email = "payroll@test.com",
+                    IsEmailVerified = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new ApparelHubERP.Core.Entities.User
+                {
+                    Username = "inventory",
+                    PasswordHash = AuthService.HashPassword("123456"),
+                    Role = "InventoryManager",
+                    Email = "inventory@test.com",
+                    IsEmailVerified = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new ApparelHubERP.Core.Entities.User
+                {
+                    Username = "procurement",
+                    PasswordHash = AuthService.HashPassword("123456"),
+                    Role = "ProcurementOfficer",
+                    Email = "procurement@test.com",
+                    IsEmailVerified = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new ApparelHubERP.Core.Entities.User
+                {
+                    Username = "cashier",
+                    PasswordHash = AuthService.HashPassword("123456"),
+                    Role = "SalesCashier",
+                    Email = "cashier@test.com",
+                    IsEmailVerified = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new ApparelHubERP.Core.Entities.User
+                {
+                    Username = "executive",
+                    PasswordHash = AuthService.HashPassword("123456"),
+                    Role = "ExecutiveBoard",
+                    Email = "executive@test.com",
+                    IsEmailVerified = true,
+                    CreatedAt = DateTime.UtcNow
                 }
             );
+
             context.SaveChanges();
-            Console.WriteLine("--> Test users created successfully!");
+            Console.WriteLine("--> Test users created successfully.");
         }
     }
     catch (Exception ex)

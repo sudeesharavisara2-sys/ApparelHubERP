@@ -68,8 +68,19 @@ public class AuthService : IAuthService
         if (existingEmail != null)
             return false;
 
-        // Validate if the assigned role is valid
-        var validRoles = new[] { "StoreManager", "HR", "ManagerBoard", "Supplier", "Customer" };
+        // ✅ Validating the 8 new enterprise ERP roles
+        var validRoles = new[]
+        {
+            "StoreManager",
+            "Admin",
+            "HROfficer",
+            "PayrollOfficer",
+            "InventoryManager",
+            "ProcurementOfficer",
+            "SalesCashier",
+            "ExecutiveBoard"
+        };
+
         if (!validRoles.Contains(registerDto.Role))
             return false;
 
@@ -103,7 +114,6 @@ public class AuthService : IAuthService
         catch (Exception ex)
         {
             Console.WriteLine($"OTP email sending failed: {ex.Message}");
-            // User remains saved even if email delivery fails transiently
         }
 
         return true;
@@ -112,26 +122,21 @@ public class AuthService : IAuthService
     // ✅ Verify the registration OTP code
     public async Task<bool> VerifyOtpAsync(VerifyOtpDto verifyOtpDto)
     {
-        // Find user by email
         var user = await _context.Set<User>()
             .FirstOrDefaultAsync(u => u.Email == verifyOtpDto.Email);
 
         if (user == null)
             return false;
 
-        // Return false if user is already verified
         if (user.IsEmailVerified)
             return false;
 
-        // Validate OTP code match
         if (user.OtpCode != verifyOtpDto.OtpCode)
             return false;
 
-        // Check if OTP has expired
         if (user.OtpExpiry == null || user.OtpExpiry < DateTime.UtcNow)
             return false;
 
-        // ✅ Mark user as verified and clear OTP fields
         user.IsEmailVerified = true;
         user.OtpCode = null;
         user.OtpExpiry = null;
@@ -144,14 +149,12 @@ public class AuthService : IAuthService
     // ✅ Forgot Password - Generate and send password reset OTP
     public async Task<bool> ForgotPasswordAsync(ForgotPasswordDto forgotPasswordDto)
     {
-        // Find user by email
         var user = await _context.Set<User>()
             .FirstOrDefaultAsync(u => u.Email == forgotPasswordDto.Email);
 
         if (user == null)
             return false;
 
-        // Generate OTP and set 5-minute expiration for password reset
         var otp = GenerateOtp();
         var otpExpiry = DateTime.UtcNow.AddMinutes(5);
 
@@ -160,7 +163,6 @@ public class AuthService : IAuthService
 
         await _context.SaveChangesAsync();
 
-        // ✅ Send Password Reset OTP via Email
         try
         {
             var emailService = new EmailService(_configuration);
@@ -178,18 +180,15 @@ public class AuthService : IAuthService
     // ✅ Verify the password reset OTP code
     public async Task<bool> VerifyResetOtpAsync(VerifyResetOtpDto verifyResetOtpDto)
     {
-        // Find user by email
         var user = await _context.Set<User>()
             .FirstOrDefaultAsync(u => u.Email == verifyResetOtpDto.Email);
 
         if (user == null)
             return false;
 
-        // Validate Reset OTP code match
         if (user.ResetOtpCode != verifyResetOtpDto.OtpCode)
             return false;
 
-        // Check if Reset OTP has expired
         if (user.ResetOtpExpiry == null || user.ResetOtpExpiry < DateTime.UtcNow)
             return false;
 
@@ -199,17 +198,14 @@ public class AuthService : IAuthService
     // ✅ Reset Password - Update user credentials with new password
     public async Task<bool> ResetPasswordAsync(ResetPasswordDto resetPasswordDto)
     {
-        // Find user by email
         var user = await _context.Set<User>()
-            .FirstOrDefaultAsync(u => u.Email == resetPasswordDto.Email);
+            .FirstOrDefaultAsync(u => u.Email == resetPasswordDto.Email); // Fixed syntax error here
 
         if (user == null)
             return false;
 
-        // Update with the newly hashed password
         user.PasswordHash = HashPassword(resetPasswordDto.NewPassword);
 
-        // Clear password reset fields
         user.ResetOtpCode = null;
         user.ResetOtpExpiry = null;
 
@@ -217,14 +213,12 @@ public class AuthService : IAuthService
         return true;
     }
 
-    // ✅ Helper method to generate a secure 6-digit numeric OTP string
     private string GenerateOtp()
     {
         var random = new Random();
         return random.Next(100000, 999999).ToString();
     }
 
-    // ✅ Generates a JWT token containing user identity details and roles
     private string GenerateJwtToken(User user)
     {
         var securityKey = new SymmetricSecurityKey(
@@ -250,21 +244,22 @@ public class AuthService : IAuthService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    // ✅ Resolves the targeted dashboard relative path depending on the User Role
     private string GetDashboardUrl(string role)
     {
         return role switch
         {
+            "Admin" => "/dashboard/admin",
             "StoreManager" => "/dashboard/store-manager",
-            "HR" => "/dashboard/hr",
-            "ManagerBoard" => "/dashboard/manager-board",
-            "Supplier" => "/dashboard/supplier",
-            "Customer" => "/dashboard/customer",
+            "HROfficer" => "/dashboard/hr",
+            "PayrollOfficer" => "/dashboard/payroll",
+            "InventoryManager" => "/dashboard/inventory",
+            "ProcurementOfficer" => "/dashboard/procurement",
+            "SalesCashier" => "/dashboard/pos",
+            "ExecutiveBoard" => "/dashboard/executive",
             _ => "/dashboard"
-        };
+        }; // Fixed switch missing semicolon here
     }
 
-    // ✅ Helper method to verify the plain-text password match against the hashed variant
     private bool VerifyPassword(string password, string hashedPassword)
     {
         using var sha256 = SHA256.Create();
@@ -273,7 +268,6 @@ public class AuthService : IAuthService
         return hash == hashedPassword;
     }
 
-    // ✅ Computes a secure SHA256 hash representation of the password string
     public static string HashPassword(string password)
     {
         using var sha256 = SHA256.Create();
