@@ -9,19 +9,15 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Database
 builder.Services.AddDbContext<ApparelHubERPContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Allows AuthService to inject generic DbContext
 builder.Services.AddScoped<DbContext>(provider =>
     provider.GetRequiredService<ApparelHubERPContext>());
 
-// Services
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-// CORS for React frontend
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendPolicy", policy =>
@@ -32,7 +28,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-// JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -42,10 +37,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
-
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(
                     builder.Configuration["Jwt:Key"]
@@ -119,7 +112,6 @@ if (app.Environment.IsDevelopment())
         }
         catch
         {
-            // Ignore browser launch errors
         }
     });
 }
@@ -133,7 +125,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Automatic database migration and seed users
 using (var scope = app.Services.CreateScope())
 {
     try
@@ -149,6 +140,15 @@ using (var scope = app.Services.CreateScope())
             context.Users.AddRange(
                 new ApparelHubERP.Core.Entities.User
                 {
+                    Username = "admin",
+                    PasswordHash = AuthService.HashPassword("123456"),
+                    Role = "Admin",
+                    Email = "admin@test.com",
+                    IsEmailVerified = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new ApparelHubERP.Core.Entities.User
+                {
                     Username = "storemanager",
                     PasswordHash = AuthService.HashPassword("123456"),
                     Role = "StoreManager",
@@ -160,17 +160,53 @@ using (var scope = app.Services.CreateScope())
                 {
                     Username = "hr",
                     PasswordHash = AuthService.HashPassword("123456"),
-                    Role = "HR",
+                    Role = "HROfficer",
                     Email = "hr@test.com",
                     IsEmailVerified = true,
                     CreatedAt = DateTime.UtcNow
                 },
                 new ApparelHubERP.Core.Entities.User
                 {
-                    Username = "admin",
+                    Username = "payroll",
                     PasswordHash = AuthService.HashPassword("123456"),
-                    Role = "Admin",
-                    Email = "admin@test.com",
+                    Role = "PayrollOfficer",
+                    Email = "payroll@test.com",
+                    IsEmailVerified = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new ApparelHubERP.Core.Entities.User
+                {
+                    Username = "inventory",
+                    PasswordHash = AuthService.HashPassword("123456"),
+                    Role = "InventoryManager",
+                    Email = "inventory@test.com",
+                    IsEmailVerified = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new ApparelHubERP.Core.Entities.User
+                {
+                    Username = "procurement",
+                    PasswordHash = AuthService.HashPassword("123456"),
+                    Role = "ProcurementOfficer",
+                    Email = "procurement@test.com",
+                    IsEmailVerified = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new ApparelHubERP.Core.Entities.User
+                {
+                    Username = "cashier",
+                    PasswordHash = AuthService.HashPassword("123456"),
+                    Role = "SalesCashier",
+                    Email = "cashier@test.com",
+                    IsEmailVerified = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new ApparelHubERP.Core.Entities.User
+                {
+                    Username = "executive",
+                    PasswordHash = AuthService.HashPassword("123456"),
+                    Role = "ExecutiveBoard",
+                    Email = "executive@test.com",
                     IsEmailVerified = true,
                     CreatedAt = DateTime.UtcNow
                 }

@@ -5,15 +5,15 @@ function Dashboard() {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
 
-    const handleLogout = () => {
-        logout();
-        navigate("/login");
-    };
-
     if (!user) {
         navigate("/login");
         return null;
     }
+
+    const handleLogout = () => {
+        logout();
+        navigate("/login");
+    };
 
     return (
         <div className="dashboard-page">
@@ -25,6 +25,10 @@ function Dashboard() {
                     <span>Your Role</span>
                     <strong>{user.role}</strong>
                 </div>
+
+                <p className="small-text">
+                    Dashboard Path: <strong>{user.dashboardUrl || "/dashboard"}</strong>
+                </p>
 
                 <button className="btn primary" onClick={handleLogout}>
                     Logout

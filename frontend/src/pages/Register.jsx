@@ -11,7 +11,7 @@ function Register() {
         email: "",
         phone: "",
         password: "",
-        role: "Customer",
+        role: "StoreManager",
     });
 
     const [message, setMessage] = useState("");
@@ -28,7 +28,6 @@ function Register() {
 
         try {
             const res = await register(form);
-
             localStorage.setItem("verifyEmail", form.email);
             setSuccess(res.data.message || "Registration successful.");
 
@@ -36,11 +35,10 @@ function Register() {
                 navigate("/verify-otp");
             }, 1000);
         } catch (err) {
-            if (err.response?.data?.message) {
-                setMessage(err.response.data.message);
-            } else {
-                setMessage("Registration failed. Please check backend connection.");
-            }
+            setMessage(
+                err.response?.data?.message ||
+                "Registration failed. Please check backend connection."
+            );
         }
     };
 
@@ -53,52 +51,25 @@ function Register() {
                 {message && <div className="error">{message}</div>}
                 {success && <div className="success">{success}</div>}
 
-                <input
-                    name="fullName"
-                    placeholder="Full Name"
-                    value={form.fullName}
-                    onChange={handleChange}
-                />
+                <input name="fullName" placeholder="Full Name" value={form.fullName} onChange={handleChange} />
 
-                <input
-                    name="username"
-                    placeholder="Username"
-                    value={form.username}
-                    onChange={handleChange}
-                    required
-                />
+                <input name="username" placeholder="Username" value={form.username} onChange={handleChange} required />
 
-                <input
-                    name="email"
-                    type="email"
-                    placeholder="Email Address"
-                    value={form.email}
-                    onChange={handleChange}
-                    required
-                />
+                <input name="email" type="email" placeholder="Email Address" value={form.email} onChange={handleChange} required />
 
-                <input
-                    name="phone"
-                    placeholder="Phone Number"
-                    value={form.phone}
-                    onChange={handleChange}
-                />
+                <input name="phone" placeholder="Phone Number" value={form.phone} onChange={handleChange} />
 
-                <input
-                    name="password"
-                    type="password"
-                    placeholder="Password"
-                    value={form.password}
-                    onChange={handleChange}
-                    required
-                />
+                <input name="password" type="password" placeholder="Password" value={form.password} onChange={handleChange} required />
 
                 <select name="role" value={form.role} onChange={handleChange}>
-                    <option value="Customer">Customer</option>
-                    <option value="Supplier">Supplier</option>
-                    <option value="HR">HR</option>
                     <option value="StoreManager">Store Manager</option>
-                    <option value="ManagerBoard">Manager Board</option>
+                    <option value="Admin">Admin</option>
+                    <option value="HROfficer">HR Officer</option>
+                    <option value="PayrollOfficer">Payroll Officer</option>
+                    <option value="InventoryManager">Inventory Manager</option>
+                    <option value="ProcurementOfficer">Procurement Officer</option>
+                    <option value="SalesCashier">Sales Cashier</option>
+                    <option value="ExecutiveBoard">Executive Board</option>
                 </select>
 
                 <button className="btn primary full">Create Account</button>
