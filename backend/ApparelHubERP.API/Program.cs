@@ -7,6 +7,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
+// ============================================================
+// ✅ ADD THESE 4 USING STATEMENTS
+// ============================================================
+using ApparelHubERP.Core.Interfaces.Repositories;
+using ApparelHubERP.Core.Interfaces.Services;
+using ApparelHubERP.Core.Services.Procurement;
+using ApparelHubERP.Infrastructure.Repositories;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ApparelHubERPContext>(options =>
@@ -17,6 +25,15 @@ builder.Services.AddScoped<DbContext>(provider =>
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+
+// ============================================================
+// ✅ ADD THESE 5 LINES (PROCUREMENT DI)
+// ============================================================
+builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
+builder.Services.AddScoped<IPurchaseOrderRepository, PurchaseOrderRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>(); // Temporary
+builder.Services.AddScoped<ISupplierService, SupplierService>();
+builder.Services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
 
 builder.Services.AddCors(options =>
 {
