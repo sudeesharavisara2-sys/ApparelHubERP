@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'; // ✅ Added useCallback
+import { useState, useEffect, useCallback } from 'react';
 import { purchaseOrderService } from '../../services/purchaseOrderService';
 import { Search, RefreshCw, Trash2, RotateCcw, XCircle, PackageCheck } from 'lucide-react';
 
@@ -49,20 +49,27 @@ const PurchaseOrderList = () => {
         };
         if (search) params.supplierId = parseInt(search) || undefined;
         const result = await purchaseOrderService.getFiltered(params);
-        setOrders(result.items);
-        setTotalCount(result.totalCount);
-        setTotalPages(result.totalPages);
+        setOrders(result.items || []);
+        setTotalCount(result.totalCount || 0);
+        setTotalPages(result.totalPages || 1);
       }
+    } catch (err) {
+      console.error(err);
+      setOrders([]);
     } finally {
       setLoading(false);
     }
   }, [page, pageSize, search, statusFilter, showDeleted]);
 
   useEffect(() => {
-    loadOrders();
+    const fetchOrders = async () => {
+      await loadOrders();
+    };
+
+    fetchOrders();
   }, [loadOrders]);
 
-  const handleSearch = (e) => {
+  const handleSearchChange = (e) => {
     setSearch(e.target.value);
     setPage(1);
   };
@@ -81,7 +88,7 @@ const PurchaseOrderList = () => {
   };
 
   const handleSoftDelete = async (id) => {
-    if (!confirm('Soft delete this order?')) return;
+    if (!confirm('Delete this order?')) return;
     await purchaseOrderService.softDelete(id);
     loadOrders();
   };
@@ -110,16 +117,24 @@ const PurchaseOrderList = () => {
     );
   };
 
-  if (loading) return <div className="text-center py-8 text-gray-400">Loading...</div>;
+  const handleSelectAll = () => {
+    if (selectedIds.length === orders.length) setSelectedIds([]);
+    else setSelectedIds(orders.map(o => o.id));
+  };
+
+  if (loading) return <div className="text-center py-8 text-gray-400">Loading orders...</div>;
 
   return (
     <div className="card fade-in">
       <div className="card-header">
         <h3 className="card-title">Purchase Orders</h3>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-gray-400">{totalCount} orders</span>
+          <span className="text-xs text-gray-400 bg-gray-50 px-3 py-1 rounded-full">{totalCount} orders</span>
           <button
-            onClick={() => setShowDeleted(!showDeleted)}
+            onClick={() => {
+              setShowDeleted(!showDeleted);
+              setPage(1);
+            }}
             className={`btn btn-sm ${showDeleted ? 'btn-warning' : 'btn-outline'}`}
           >
             {showDeleted ? '🗑️ Deleted' : 'Show Deleted'}
@@ -136,10 +151,13 @@ const PurchaseOrderList = () => {
               type="text"
               placeholder="Search by Supplier ID..."
               value={search}
-              onChange={handleSearch}
+              onChange={handleSearchChange}
               className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
+          <button onClick={loadOrders} className="btn btn-secondary btn-sm" title="Refresh">
+            <RefreshCw className="w-4 h-4" />
+          </button>
         </div>
         <select
           value={statusFilter}
@@ -150,9 +168,6 @@ const PurchaseOrderList = () => {
             <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
         </select>
-        <button onClick={loadOrders} className="btn btn-secondary btn-sm">
-          <RefreshCw className="w-4 h-4" />
-        </button>
         {selectedIds.length > 0 && (
           <button onClick={handleBulkDelete} className="btn btn-danger btn-sm">
             <Trash2 className="w-4 h-4" />
@@ -170,10 +185,7 @@ const PurchaseOrderList = () => {
                 <input
                   type="checkbox"
                   checked={selectedIds.length === orders.length && orders.length > 0}
-                  onChange={() => {
-                    if (selectedIds.length === orders.length) setSelectedIds([]);
-                    else setSelectedIds(orders.map(o => o.id));
-                  }}
+                  onChange={handleSelectAll}
                 />
               </th>
               <th>PO #</th>
@@ -208,7 +220,7 @@ const PurchaseOrderList = () => {
                       <>
                         {o.status < 3 && (
                           <select
-                            onChange={(e) => handleStatusChange(o.id, e.target.value)}
+                            onChange={(e) => handleStatusChange(o.id, parseInt(e.target.value))}
                             className="px-2 py-1 border border-gray-200 rounded text-sm"
                             value={o.status}
                           >

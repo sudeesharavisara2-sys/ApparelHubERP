@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+// Public Pages
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -8,16 +9,16 @@ import VerifyOtp from "./pages/VerifyOtp";
 import ForgotPassword from "./pages/ForgotPassword";
 import VerifyResetOtp from "./pages/VerifyResetOtp";
 import ResetPassword from "./pages/ResetPassword";
-import Dashboard from "./pages/Dashboard";
 
-// ✅ IMPORT YOUR PROCUREMENT PAGES
+// Protected Pages (require authentication)
+import Dashboard from "./pages/Dashboard";
 import SuppliersPage from "./pages/SuppliersPage";
 import PurchaseOrdersPage from "./pages/PurchaseOrdersPage";
 
 function App() {
     return (
         <Routes>
-            {/* PUBLIC ROUTES */}
+            {/* ============= PUBLIC ROUTES ============= */}
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -26,14 +27,12 @@ function App() {
             <Route path="/verify-reset-otp" element={<VerifyResetOtp />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
-            {/* PROTECTED ROUTES (Require Login) */}
+            {/* ============= PROTECTED ROUTES ============= */}
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            
-            {/* ✅ YOUR PROCUREMENT ROUTES */}
             <Route path="/suppliers" element={<ProtectedRoute><SuppliersPage /></ProtectedRoute>} />
             <Route path="/purchase-orders" element={<ProtectedRoute><PurchaseOrdersPage /></ProtectedRoute>} />
 
-            {/* FALLBACK */}
+            {/* ============= FALLBACK ============= */}
             <Route path="*" element={<Navigate to="/" />} />
         </Routes>
     );

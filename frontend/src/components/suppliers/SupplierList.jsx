@@ -5,6 +5,7 @@ import { Search, RefreshCw, Trash2, RotateCcw, CheckCircle, XCircle } from 'luci
 const SupplierList = () => {
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
@@ -12,10 +13,13 @@ const SupplierList = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [selectedIds, setSelectedIds] = useState([]);
   const [showDeleted, setShowDeleted] = useState(false);
+  const [searchTimeout, setSearchTimeout] = useState(null);
 
   const loadSuppliers = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
+
       if (showDeleted) {
         const data = await supplierService.getDeleted();
         setSuppliers(data);
@@ -27,22 +31,41 @@ const SupplierList = () => {
           pageSize,
           name: search || undefined,
         });
-        setSuppliers(result.items);
-        setTotalCount(result.totalCount);
-        setTotalPages(result.totalPages);
+        setSuppliers(result.items || []);
+        setTotalCount(result.totalCount || 0);
+        setTotalPages(result.totalPages || 1);
       }
+    } catch (err) {
+      console.error('Error loading suppliers:', err);
+      setError(err.message || 'Failed to load suppliers');
+      setSuppliers([]);
     } finally {
       setLoading(false);
     }
   }, [page, pageSize, search, showDeleted]);
 
   useEffect(() => {
-    loadSuppliers();
+    // Avoid calling setState synchronously inside effect to prevent cascading renders
+    const t = setTimeout(() => {
+      loadSuppliers();
+    }, 0);
+    return () => clearTimeout(t);
   }, [loadSuppliers]);
 
-  const handleSearch = (e) => {
-    setSearch(e.target.value);
+  // Debounced search
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearch(value);
     setPage(1);
+
+    // Clear previous timeout
+    if (searchTimeout) clearTimeout(searchTimeout);
+
+    // Debounce search by 500ms
+    const timeout = setTimeout(() => {
+      loadSuppliers();
+    }, 500);
+    setSearchTimeout(timeout);
   };
 
   const handleToggleSelect = (id) => {
@@ -51,30 +74,78 @@ const SupplierList = () => {
     );
   };
 
-  const handleBulkDelete = async () => {
-    if (!selectedIds.length || !confirm(`Delete ${selectedIds.length} suppliers?`)) return;
-    await supplierService.bulkDelete(selectedIds);
-    setSelectedIds([]);
-    loadSuppliers();
+  const handleSelectAll = () => {
+    if (selectedIds.length === suppliers.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(suppliers.map(s => s.id));
+    }
   };
 
   const handleToggleStatus = async (id) => {
-    await supplierService.toggleStatus(id);
-    loadSuppliers();
+    try {
+      await supplierService.toggleStatus(id);
+      loadSuppliers();
+    } catch {
+      alert('Failed to toggle status');
+    }
   };
 
   const handleSoftDelete = async (id) => {
-    if (!confirm('Soft delete this supplier?')) return;
-    await supplierService.softDelete(id);
-    loadSuppliers();
+    if (!confirm('Delete this supplier?')) return;
+    try {
+      await supplierService.softDelete(id);
+      loadSuppliers();
+    } catch {
+      alert('Failed to delete supplier');
+    }
   };
 
   const handleRestore = async (id) => {
-    await supplierService.restore(id);
+    try {
+      await supplierService.restore(id);
+      loadSuppliers();
+    } catch {
+      alert('Failed to restore supplier');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!selectedIds.length || !confirm(`Delete ${selectedIds.length} suppliers?`)) return;
+    try {
+      await supplierService.bulkDelete(selectedIds);
+      setSelectedIds([]);
+      loadSuppliers();
+    } catch {
+      alert('Failed to delete suppliers');
+    }
+  };
+
+  const handleRefresh = () => {
     loadSuppliers();
   };
 
-  if (loading) return <div className="text-center py-8 text-gray-400">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="card fade-in">
+        <div className="text-center py-8 text-gray-400">Loading suppliers...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="card fade-in">
+        <div className="text-center py-8 text-red-500">
+          <p>Error: {error}</p>
+          <button onClick={handleRefresh} className="mt-2 btn btn-primary btn-sm">
+            <RefreshCw className="w-4 h-4" />
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="card fade-in">
@@ -83,7 +154,10 @@ const SupplierList = () => {
         <div className="flex items-center gap-3">
           <span className="text-xs text-gray-400">{totalCount} suppliers</span>
           <button
-            onClick={() => setShowDeleted(!showDeleted)}
+            onClick={() => {
+              setShowDeleted(!showDeleted);
+              setPage(1);
+            }}
             className={`btn btn-sm ${showDeleted ? 'btn-warning' : 'btn-outline'}`}
           >
             {showDeleted ? '🗑️ Deleted' : 'Show Deleted'}
@@ -98,13 +172,13 @@ const SupplierList = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search suppliers..."
+              placeholder="Search suppliers by name..."
               value={search}
-              onChange={handleSearch}
+              onChange={handleSearchChange}
               className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-          <button onClick={loadSuppliers} className="btn btn-secondary btn-sm">
+          <button onClick={handleRefresh} className="btn btn-secondary btn-sm" title="Refresh">
             <RefreshCw className="w-4 h-4" />
           </button>
         </div>
@@ -125,10 +199,7 @@ const SupplierList = () => {
                 <input
                   type="checkbox"
                   checked={selectedIds.length === suppliers.length && suppliers.length > 0}
-                  onChange={() => {
-                    if (selectedIds.length === suppliers.length) setSelectedIds([]);
-                    else setSelectedIds(suppliers.map(s => s.id));
-                  }}
+                  onChange={handleSelectAll}
                 />
               </th>
               <th>Name</th>
@@ -190,7 +261,11 @@ const SupplierList = () => {
               </tr>
             ))}
             {suppliers.length === 0 && (
-              <tr><td colSpan="6" className="text-center py-8 text-gray-400">No suppliers found</td></tr>
+              <tr>
+                <td colSpan="6" className="text-center py-8 text-gray-400">
+                  {search ? 'No suppliers match your search' : 'No suppliers found'}
+                </td>
+              </tr>
             )}
           </tbody>
         </table>
