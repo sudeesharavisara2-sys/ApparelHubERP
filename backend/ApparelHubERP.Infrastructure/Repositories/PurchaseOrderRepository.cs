@@ -5,14 +5,9 @@ using ApparelHubERP.Infrastructure.Data;
 
 namespace ApparelHubERP.Infrastructure.Repositories
 {
-    public class PurchaseOrderRepository : IPurchaseOrderRepository
+    public class PurchaseOrderRepository(ApparelHubERPContext context) : IPurchaseOrderRepository
     {
-        private readonly ApparelHubERPContext _context;
-
-        public PurchaseOrderRepository(ApparelHubERPContext context)
-        {
-            _context = context;
-        }
+        private readonly ApparelHubERPContext _context = context;
 
         public async Task<IEnumerable<PurchaseOrder>> GetAllAsync()
             => await _context.PurchaseOrders

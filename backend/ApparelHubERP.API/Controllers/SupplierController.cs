@@ -8,14 +8,9 @@ namespace ApparelHubERP.API.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize(Roles = "ProcurementOfficer,ManagerBoard,Admin")]
-    public class SupplierController : ControllerBase
+    public class SupplierController(ISupplierService supplierService) : ControllerBase
     {
-        private readonly ISupplierService _supplierService;
-
-        public SupplierController(ISupplierService supplierService)
-        {
-            _supplierService = supplierService;
-        }
+        private readonly ISupplierService _supplierService = supplierService;
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -28,7 +23,7 @@ namespace ApparelHubERP.API.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             var supplier = await _supplierService.GetSupplierByIdAsync(id);
-            if (supplier == null)
+            if (supplier is null)
                 return NotFound(new { message = "Supplier not found." });
             return Ok(supplier);
         }
@@ -43,7 +38,7 @@ namespace ApparelHubERP.API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { message = ex.Message, innerException = ex.InnerException?.Message });
             }
         }
 

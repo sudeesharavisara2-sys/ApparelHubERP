@@ -3,25 +3,18 @@ using ApparelHubERP.Core.Entities;
 using ApparelHubERP.Core.Interfaces.Repositories;
 using ApparelHubERP.Core.Interfaces.Services;
 
-namespace ApparelHubERP.Core.Services.Procurement
+namespace ApparelHubERP.Core.Services
 {
-    public class PurchaseOrderService : IPurchaseOrderService
+    public class PurchaseOrderService(
+        IPurchaseOrderRepository poRepository,
+        ISupplierRepository supplierRepository,
+        IProductRepository productRepository) : IPurchaseOrderService
     {
-        private readonly IPurchaseOrderRepository _poRepository;
-        private readonly ISupplierRepository _supplierRepository;
-        private readonly IProductRepository _productRepository;
+        private readonly IPurchaseOrderRepository _poRepository = poRepository;
+        private readonly ISupplierRepository _supplierRepository = supplierRepository;
+        private readonly IProductRepository _productRepository = productRepository;
 
-        public PurchaseOrderService(
-            IPurchaseOrderRepository poRepository,
-            ISupplierRepository supplierRepository,
-            IProductRepository productRepository)
-        {
-            _poRepository = poRepository;
-            _supplierRepository = supplierRepository;
-            _productRepository = productRepository;
-        }
-
-        private async Task<PurchaseOrderResponseDto> MapToResponse(PurchaseOrder order)
+        private static async Task<PurchaseOrderResponseDto> MapToResponse(PurchaseOrder order)
         {
             return new PurchaseOrderResponseDto
             {
@@ -33,7 +26,8 @@ namespace ApparelHubERP.Core.Services.Procurement
                 Status = order.Status,
                 Remarks = order.Remarks,
                 SupplierName = order.Supplier?.Name ?? "Unknown",
-                Items = order.Items.Select(i => new PurchaseOrderItemResponseDto
+                // ✅ Collection initialization simplified (IDE0305)
+                Items = [.. order.Items.Select(i => new PurchaseOrderItemResponseDto
                 {
                     ProductId = i.ProductId,
                     ProductName = i.Product?.Name ?? "Unknown Product",
@@ -41,7 +35,7 @@ namespace ApparelHubERP.Core.Services.Procurement
                     QuantityReceived = i.QuantityReceived,
                     UnitCost = i.UnitCost,
                     TotalLineCost = i.TotalLineCost
-                }).ToList()
+                })]
             };
         }
 
@@ -64,9 +58,8 @@ namespace ApparelHubERP.Core.Services.Procurement
             decimal total = 0;
             foreach (var itemDto in dto.Items)
             {
-                var product = await _productRepository.GetByIdAsync(itemDto.ProductId);
-                if (product == null)
-                    throw new Exception($"Product with ID {itemDto.ProductId} not found.");
+                var product = await _productRepository.GetByIdAsync(itemDto.ProductId)
+                    ?? throw new Exception($"Product with ID {itemDto.ProductId} not found.");
 
                 var item = new PurchaseOrderItem
                 {
@@ -89,7 +82,7 @@ namespace ApparelHubERP.Core.Services.Procurement
         public async Task<PurchaseOrderResponseDto?> GetOrderByIdAsync(int id)
         {
             var order = await _poRepository.GetOrderWithItemsAndSupplierAsync(id);
-            return order == null ? null : await MapToResponse(order);
+            return order is null ? null : await MapToResponse(order);
         }
 
         public async Task<IEnumerable<PurchaseOrderResponseDto>> GetAllOrdersAsync()
@@ -112,9 +105,8 @@ namespace ApparelHubERP.Core.Services.Procurement
 
         public async Task<PurchaseOrderResponseDto> UpdateOrderStatusAsync(int orderId, UpdatePurchaseOrderStatusDto dto)
         {
-            var order = await _poRepository.GetOrderWithItemsAndSupplierAsync(orderId);
-            if (order == null)
-                throw new Exception("Order not found.");
+            var order = await _poRepository.GetOrderWithItemsAndSupplierAsync(orderId)
+                ?? throw new Exception("Order not found.");
 
             if (order.Status == PurchaseOrderStatus.Received && dto.Status != PurchaseOrderStatus.Received)
                 throw new Exception("Cannot change status of a received order.");
@@ -131,9 +123,8 @@ namespace ApparelHubERP.Core.Services.Procurement
 
         public async Task<PurchaseOrderResponseDto> ReceiveOrderAsync(int orderId)
         {
-            var order = await _poRepository.GetOrderWithItemsAndSupplierAsync(orderId);
-            if (order == null)
-                throw new Exception("Order not found.");
+            var order = await _poRepository.GetOrderWithItemsAndSupplierAsync(orderId)
+                ?? throw new Exception("Order not found.");
 
             if (order.Status != PurchaseOrderStatus.Shipped)
                 throw new Exception("Only 'Shipped' orders can be received.");
@@ -141,7 +132,7 @@ namespace ApparelHubERP.Core.Services.Procurement
             foreach (var item in order.Items)
             {
                 var product = await _productRepository.GetByIdAsync(item.ProductId);
-                if (product != null)
+                if (product is not null)
                 {
                     product.StockQuantity += item.QuantityOrdered;
                     _productRepository.Update(product);
@@ -163,10 +154,10 @@ namespace ApparelHubERP.Core.Services.Procurement
             var lowStockProducts = await _productRepository.GetLowStockProductsAsync();
             return lowStockProducts.Select(p => new
             {
-                ProductId = p.Id,
-                ProductName = p.Name,
+                p.Id,
+                p.Name,
                 CurrentStock = p.StockQuantity,
-                ReorderLevel = p.ReorderLevel,
+                p.ReorderLevel,
                 SuggestedQuantity = p.ReorderLevel * 2
             });
         }

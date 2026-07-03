@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace ApparelHubERP.Core.Entities
@@ -27,6 +26,6 @@ namespace ApparelHubERP.Core.Entities
         public int SupplierId { get; set; }
         public Supplier Supplier { get; set; } = null!;
 
-        public ICollection<PurchaseOrderItem> Items { get; set; } = new List<PurchaseOrderItem>();
+        public ICollection<PurchaseOrderItem> Items { get; set; } = [];
     }
 }

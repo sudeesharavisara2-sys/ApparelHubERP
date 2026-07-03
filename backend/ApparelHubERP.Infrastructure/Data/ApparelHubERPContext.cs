@@ -1,31 +1,19 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using ApparelHubERP.Core.Entities;  // ✅ This is the correct namespace
+using ApparelHubERP.Core.Entities;
 
 namespace ApparelHubERP.Infrastructure.Data
 {
-    public class ApparelHubERPContext : DbContext
+    public class ApparelHubERPContext(DbContextOptions<ApparelHubERPContext> options) : DbContext(options)
     {
-        public ApparelHubERPContext(DbContextOptions<ApparelHubERPContext> options) : base(options)
-        {
-        }
-
-        // ============================================================
-        // EXISTING TABLES (Keep these)
-        // ============================================================
         public DbSet<Employee> Employees { get; set; }
         public DbSet<User> Users { get; set; }
 
-        // ============================================================
-        // 🚀 PROCUREMENT TABLES (ADD THESE)
-        // ============================================================
+        // 🚀 PROCUREMENT TABLES
         public DbSet<Product> Products { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }
         public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
         public DbSet<PurchaseOrderItem> PurchaseOrderItems { get; set; }
 
-        // ============================================================
-        // RELATIONSHIPS (ADD THIS)
-        // ============================================================
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

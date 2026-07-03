@@ -5,14 +5,9 @@ using ApparelHubERP.Infrastructure.Data;
 
 namespace ApparelHubERP.Infrastructure.Repositories
 {
-    public class SupplierRepository : ISupplierRepository
+    public class SupplierRepository(ApparelHubERPContext context) : ISupplierRepository
     {
-        private readonly ApparelHubERPContext _context;
-
-        public SupplierRepository(ApparelHubERPContext context)
-        {
-            _context = context;
-        }
+        private readonly ApparelHubERPContext _context = context;
 
         public async Task<IEnumerable<Supplier>> GetAllAsync()
             => await _context.Suppliers.ToListAsync();

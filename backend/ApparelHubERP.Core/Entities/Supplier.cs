@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace ApparelHubERP.Core.Entities
@@ -16,6 +15,6 @@ namespace ApparelHubERP.Core.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
 
-        public ICollection<PurchaseOrder> PurchaseOrders { get; set; } = new List<PurchaseOrder>();
+        public ICollection<PurchaseOrder> PurchaseOrders { get; set; } = [];
     }
 }

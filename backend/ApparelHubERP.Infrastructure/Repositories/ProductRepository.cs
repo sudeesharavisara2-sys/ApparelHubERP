@@ -6,14 +6,9 @@ using ApparelHubERP.Infrastructure.Data;
 namespace ApparelHubERP.Infrastructure.Repositories
 {
     // ⚠️ TEMPORARY - Remove when Member 04 finishes
-    public class ProductRepository : IProductRepository
+    public class ProductRepository(ApparelHubERPContext context) : IProductRepository
     {
-        private readonly ApparelHubERPContext _context;
-
-        public ProductRepository(ApparelHubERPContext context)
-        {
-            _context = context;
-        }
+        private readonly ApparelHubERPContext _context = context;
 
         public async Task<Product?> GetByIdAsync(int id)
             => await _context.Products.FindAsync(id);

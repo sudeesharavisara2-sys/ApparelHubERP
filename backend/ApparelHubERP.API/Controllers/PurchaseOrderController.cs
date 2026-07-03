@@ -8,14 +8,9 @@ namespace ApparelHubERP.API.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize(Roles = "ProcurementOfficer,ManagerBoard,Admin")]
-    public class PurchaseOrderController : ControllerBase
+    public class PurchaseOrderController(IPurchaseOrderService poService) : ControllerBase
     {
-        private readonly IPurchaseOrderService _poService;
-
-        public PurchaseOrderController(IPurchaseOrderService poService)
-        {
-            _poService = poService;
-        }
+        private readonly IPurchaseOrderService _poService = poService;
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -28,7 +23,7 @@ namespace ApparelHubERP.API.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             var order = await _poService.GetOrderByIdAsync(id);
-            if (order == null)
+            if (order is null)
                 return NotFound(new { message = "Purchase Order not found." });
             return Ok(order);
         }

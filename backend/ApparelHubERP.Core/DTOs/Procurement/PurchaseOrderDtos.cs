@@ -14,7 +14,7 @@ namespace ApparelHubERP.Core.DTOs.Procurement
         public int SupplierId { get; set; }
         public DateTime? ExpectedDeliveryDate { get; set; }
         public string? Remarks { get; set; }
-        public List<PurchaseOrderItemDto> Items { get; set; } = new();
+        public List<PurchaseOrderItemDto> Items { get; set; } = [];
     }
 
     public class UpdatePurchaseOrderStatusDto
@@ -42,6 +42,6 @@ namespace ApparelHubERP.Core.DTOs.Procurement
         public PurchaseOrderStatus Status { get; set; }
         public string? Remarks { get; set; }
         public string SupplierName { get; set; } = string.Empty;
-        public List<PurchaseOrderItemResponseDto> Items { get; set; } = new();
+        public List<PurchaseOrderItemResponseDto> Items { get; set; } = [];
     }
 }

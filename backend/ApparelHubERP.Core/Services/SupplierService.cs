@@ -3,16 +3,12 @@ using ApparelHubERP.Core.Entities;
 using ApparelHubERP.Core.Interfaces.Repositories;
 using ApparelHubERP.Core.Interfaces.Services;
 
-namespace ApparelHubERP.Core.Services.Procurement
+namespace ApparelHubERP.Core.Services
 {
-    public class SupplierService : ISupplierService
+    // ✅ Primary constructor (IDE0290)
+    public class SupplierService(ISupplierRepository repository) : ISupplierService
     {
-        private readonly ISupplierRepository _repository;
-
-        public SupplierService(ISupplierRepository repository)
-        {
-            _repository = repository;
-        }
+        private readonly ISupplierRepository _repository = repository;
 
         public async Task<IEnumerable<SupplierResponseDto>> GetAllSuppliersAsync()
         {
@@ -33,7 +29,7 @@ namespace ApparelHubERP.Core.Services.Procurement
         public async Task<SupplierResponseDto?> GetSupplierByIdAsync(int id)
         {
             var supplier = await _repository.GetByIdAsync(id);
-            if (supplier == null) return null;
+            if (supplier is null) return null;  // ✅ Null check simplified
             return new SupplierResponseDto
             {
                 Id = supplier.Id,
@@ -79,7 +75,7 @@ namespace ApparelHubERP.Core.Services.Procurement
         public async Task<bool> UpdateSupplierAsync(UpdateSupplierDto dto)
         {
             var supplier = await _repository.GetByIdAsync(dto.Id);
-            if (supplier == null) return false;
+            if (supplier is null) return false;  // ✅ Null check simplified
 
             supplier.Name = dto.Name;
             supplier.ContactPerson = dto.ContactPerson;
@@ -95,7 +91,7 @@ namespace ApparelHubERP.Core.Services.Procurement
         public async Task<bool> ToggleSupplierStatusAsync(int id)
         {
             var supplier = await _repository.GetByIdAsync(id);
-            if (supplier == null) return false;
+            if (supplier is null) return false;  // ✅ Null check simplified
 
             supplier.IsActive = !supplier.IsActive;
             supplier.UpdatedAt = DateTime.UtcNow;
