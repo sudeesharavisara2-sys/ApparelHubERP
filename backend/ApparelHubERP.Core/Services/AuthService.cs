@@ -11,21 +11,14 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace ApparelHubERP.Core.Services;
 
-public class AuthService : IAuthService
+// ✅ IDE0290: Primary constructor
+public class AuthService(DbContext context, IConfiguration configuration) : IAuthService
 {
-    private readonly DbContext _context;
-    private readonly IConfiguration _configuration;
-
-    // Injecting generic DbContext instead of hardcoded ApparelHubERPContext for better abstraction
-    public AuthService(DbContext context, IConfiguration configuration)
-    {
-        _context = context;
-        _configuration = configuration;
-    }
+    private readonly DbContext _context = context;
+    private readonly IConfiguration _configuration = configuration;
 
     public async Task<LoginResponseDto?> LoginAsync(LoginDto loginDto)
     {
-        // Accessing the generic User DbSet
         var user = await _context.Set<User>()
             .FirstOrDefaultAsync(u => u.Username == loginDto.Username);
 
@@ -35,7 +28,6 @@ public class AuthService : IAuthService
         if (!VerifyPassword(loginDto.Password, user.PasswordHash))
             return null;
 
-        // ✅ Check if the user's email is verified before allowing login
         if (!user.IsEmailVerified)
             return null;
 
@@ -51,24 +43,20 @@ public class AuthService : IAuthService
         };
     }
 
-    // ✅ Register new user, generate OTP, and trigger verification email
     public async Task<bool> RegisterAsync(RegisterDto registerDto)
     {
-        // Check if username already exists
         var existingUser = await _context.Set<User>()
             .FirstOrDefaultAsync(u => u.Username == registerDto.Username);
 
         if (existingUser != null)
             return false;
 
-        // Check if email already exists
         var existingEmail = await _context.Set<User>()
             .FirstOrDefaultAsync(u => u.Email == registerDto.Email);
 
         if (existingEmail != null)
             return false;
 
-        // ✅ Validating the 8 new enterprise ERP roles
         var validRoles = new[]
         {
             "StoreManager",
@@ -84,7 +72,6 @@ public class AuthService : IAuthService
         if (!validRoles.Contains(registerDto.Role))
             return false;
 
-        // ✅ Generate OTP and set 5-minute expiration
         var otp = GenerateOtp();
         var otpExpiry = DateTime.UtcNow.AddMinutes(5);
 
@@ -105,7 +92,6 @@ public class AuthService : IAuthService
         _context.Set<User>().Add(user);
         await _context.SaveChangesAsync();
 
-        // ✅ Send Registration OTP via Email
         try
         {
             var emailService = new EmailService(_configuration);
@@ -119,7 +105,6 @@ public class AuthService : IAuthService
         return true;
     }
 
-    // ✅ Verify the registration OTP code
     public async Task<bool> VerifyOtpAsync(VerifyOtpDto verifyOtpDto)
     {
         var user = await _context.Set<User>()
@@ -146,7 +131,6 @@ public class AuthService : IAuthService
         return true;
     }
 
-    // ✅ Forgot Password - Generate and send password reset OTP
     public async Task<bool> ForgotPasswordAsync(ForgotPasswordDto forgotPasswordDto)
     {
         var user = await _context.Set<User>()
@@ -177,7 +161,6 @@ public class AuthService : IAuthService
         return true;
     }
 
-    // ✅ Verify the password reset OTP code
     public async Task<bool> VerifyResetOtpAsync(VerifyResetOtpDto verifyResetOtpDto)
     {
         var user = await _context.Set<User>()
@@ -195,11 +178,10 @@ public class AuthService : IAuthService
         return true;
     }
 
-    // ✅ Reset Password - Update user credentials with new password
     public async Task<bool> ResetPasswordAsync(ResetPasswordDto resetPasswordDto)
     {
         var user = await _context.Set<User>()
-            .FirstOrDefaultAsync(u => u.Email == resetPasswordDto.Email); // Fixed syntax error here
+            .FirstOrDefaultAsync(u => u.Email == resetPasswordDto.Email);
 
         if (user == null)
             return false;
@@ -213,7 +195,8 @@ public class AuthService : IAuthService
         return true;
     }
 
-    private string GenerateOtp()
+    // ✅ CA1822: Marked as static
+    private static string GenerateOtp()
     {
         var random = new Random();
         return random.Next(100000, 999999).ToString();
@@ -244,7 +227,8 @@ public class AuthService : IAuthService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    private string GetDashboardUrl(string role)
+    // ✅ CA1822: Marked as static
+    private static string GetDashboardUrl(string role)
     {
         return role switch
         {
@@ -257,21 +241,22 @@ public class AuthService : IAuthService
             "SalesCashier" => "/dashboard/pos",
             "ExecutiveBoard" => "/dashboard/executive",
             _ => "/dashboard"
-        }; // Fixed switch missing semicolon here
+        };
     }
 
-    private bool VerifyPassword(string password, string hashedPassword)
+    // ✅ CA1822: Marked as static
+    // ✅ CA1850: Use SHA256.HashData instead of ComputeHash
+    private static bool VerifyPassword(string password, string hashedPassword)
     {
-        using var sha256 = SHA256.Create();
-        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+        var hashedBytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));
         var hash = Convert.ToBase64String(hashedBytes);
         return hash == hashedPassword;
     }
 
+    // ✅ CA1850: Use SHA256.HashData instead of ComputeHash
     public static string HashPassword(string password)
     {
-        using var sha256 = SHA256.Create();
-        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+        var hashedBytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));
         return Convert.ToBase64String(hashedBytes);
     }
 }
