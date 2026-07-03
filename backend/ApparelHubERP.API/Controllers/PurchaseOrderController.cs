@@ -19,6 +19,27 @@ namespace ApparelHubERP.API.Controllers
             return Ok(orders);
         }
 
+        [HttpGet("filtered")]
+        public async Task<IActionResult> GetFiltered([FromQuery] PurchaseOrderFilterDto filter)
+        {
+            var result = await _poService.GetFilteredAsync(filter);
+            return Ok(result);
+        }
+
+        [HttpGet("deleted")]
+        public async Task<IActionResult> GetDeleted()
+        {
+            var result = await _poService.GetDeletedAsync();
+            return Ok(result);
+        }
+
+        [HttpGet("stats")]
+        public async Task<IActionResult> GetStatistics()
+        {
+            var stats = await _poService.GetStatisticsAsync();
+            return Ok(stats);
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -89,6 +110,96 @@ namespace ApparelHubERP.API.Controllers
             {
                 var suggestions = await _poService.GetReorderSuggestionsAsync();
                 return Ok(suggestions);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        // ✅ NEW: Soft Delete
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> SoftDelete(int id)
+        {
+            try
+            {
+                await _poService.SoftDeleteAsync(id);
+                return Ok(new { message = "Order soft-deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        // ✅ NEW: Restore
+        [HttpPatch("{id}/restore")]
+        public async Task<IActionResult> Restore(int id)
+        {
+            try
+            {
+                await _poService.RestoreAsync(id);
+                return Ok(new { message = "Order restored successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        // ✅ NEW: Bulk Delete
+        [HttpDelete("bulk-delete")]
+        public async Task<IActionResult> BulkDelete([FromBody] BulkOperationDto dto)
+        {
+            try
+            {
+                await _poService.BulkDeleteAsync(dto);
+                return Ok(new { message = $"{dto.Ids.Count} orders deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        // ✅ NEW: Cancel Order
+        [HttpPost("{id}/cancel")]
+        public async Task<IActionResult> Cancel(int id)
+        {
+            try
+            {
+                await _poService.CancelOrderAsync(id);
+                return Ok(new { message = "Order cancelled successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        // ✅ NEW: Update Order Items
+        [HttpPut("{id}/items")]
+        public async Task<IActionResult> UpdateItems(int id, [FromBody] UpdateOrderItemsDto dto)
+        {
+            try
+            {
+                await _poService.UpdateOrderItemsAsync(id, dto);
+                return Ok(new { message = "Order items updated successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        // ✅ NEW: Remove Item
+        [HttpDelete("{orderId}/items/{itemId}")]
+        public async Task<IActionResult> RemoveItem(int orderId, int itemId)
+        {
+            try
+            {
+                await _poService.RemoveItemAsync(orderId, itemId);
+                return Ok(new { message = "Item removed successfully." });
             }
             catch (Exception ex)
             {

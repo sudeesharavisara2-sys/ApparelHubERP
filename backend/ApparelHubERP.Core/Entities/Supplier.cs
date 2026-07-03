@@ -15,6 +15,23 @@ namespace ApparelHubERP.Core.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
 
+        // ✅ NEW: Soft Delete Properties
+        public bool IsDeleted { get; set; } = false;
+        public DateTime? DeletedAt { get; set; }
+
         public ICollection<PurchaseOrder> PurchaseOrders { get; set; } = [];
+
+        // ✅ NEW: Soft Delete Methods
+        public void SoftDelete()
+        {
+            IsDeleted = true;
+            DeletedAt = DateTime.UtcNow;
+        }
+
+        public void Restore()
+        {
+            IsDeleted = false;
+            DeletedAt = null;
+        }
     }
 }

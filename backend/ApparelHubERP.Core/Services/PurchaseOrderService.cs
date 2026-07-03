@@ -26,7 +26,6 @@ namespace ApparelHubERP.Core.Services
                 Status = order.Status,
                 Remarks = order.Remarks,
                 SupplierName = order.Supplier?.Name ?? "Unknown",
-                // ✅ Collection initialization simplified (IDE0305)
                 Items = [.. order.Items.Select(i => new PurchaseOrderItemResponseDto
                 {
                     ProductId = i.ProductId,
@@ -160,6 +159,110 @@ namespace ApparelHubERP.Core.Services
                 p.ReorderLevel,
                 SuggestedQuantity = p.ReorderLevel * 2
             });
+        }
+
+        // ✅ NEW: Advanced Methods
+        public async Task<PagedResult<PurchaseOrderResponseDto>> GetFilteredAsync(PurchaseOrderFilterDto filter)
+        {
+            var result = await _poRepository.GetFilteredAsync(filter);
+            var items = new List<PurchaseOrderResponseDto>();
+            foreach (var order in result.Items)
+                items.Add(await MapToResponse(order));
+
+            return new PagedResult<PurchaseOrderResponseDto>
+            {
+                Items = items,
+                TotalCount = result.TotalCount,
+                Page = result.Page,
+                PageSize = result.PageSize
+            };
+        }
+
+        public async Task<IEnumerable<PurchaseOrderResponseDto>> GetDeletedAsync()
+        {
+            var orders = await _poRepository.GetDeletedAsync();
+            var result = new List<PurchaseOrderResponseDto>();
+            foreach (var order in orders)
+                result.Add(await MapToResponse(order));
+            return result;
+        }
+
+        public async Task SoftDeleteAsync(int id)
+        {
+            var order = await _poRepository.GetOrderWithItemsAndSupplierAsync(id)
+                ?? throw new Exception("Order not found.");
+            order.SoftDelete();
+            await _poRepository.SaveChangesAsync();
+        }
+
+        public async Task RestoreAsync(int id)
+        {
+            var order = await _poRepository.GetOrderWithItemsAndSupplierAsync(id)
+                ?? throw new Exception("Order not found.");
+            order.Restore();
+            await _poRepository.SaveChangesAsync();
+        }
+
+        public async Task BulkDeleteAsync(BulkOperationDto dto)
+        {
+            if (dto.Ids == null || !dto.Ids.Any())
+                throw new Exception("No order IDs provided.");
+            await _poRepository.BulkDeleteAsync(dto.Ids);
+        }
+
+        public async Task CancelOrderAsync(int id)
+        {
+            var order = await _poRepository.GetOrderWithItemsAndSupplierAsync(id)
+                ?? throw new Exception("Order not found.");
+            if (order.Status == PurchaseOrderStatus.Received || order.Status == PurchaseOrderStatus.Cancelled)
+                throw new Exception("Cannot cancel a received or already cancelled order.");
+            order.Status = PurchaseOrderStatus.Cancelled;
+            await _poRepository.SaveChangesAsync();
+        }
+
+        public async Task UpdateOrderItemsAsync(int orderId, UpdateOrderItemsDto dto)
+        {
+            var order = await _poRepository.GetOrderWithItemsAndSupplierAsync(orderId)
+                ?? throw new Exception("Order not found.");
+            if (order.Status != PurchaseOrderStatus.Draft)
+                throw new Exception("Items can only be updated for Draft orders.");
+
+            order.Items.Clear();
+            decimal total = 0;
+            foreach (var itemDto in dto.Items)
+            {
+                var product = await _productRepository.GetByIdAsync(itemDto.ProductId)
+                    ?? throw new Exception($"Product {itemDto.ProductId} not found.");
+                var item = new PurchaseOrderItem
+                {
+                    ProductId = itemDto.ProductId,
+                    QuantityOrdered = itemDto.Quantity,
+                    UnitCost = itemDto.UnitCost
+                };
+                order.Items.Add(item);
+                total += item.TotalLineCost;
+            }
+            order.TotalAmount = total;
+            await _poRepository.SaveChangesAsync();
+        }
+
+        public async Task RemoveItemAsync(int orderId, int itemId)
+        {
+            var order = await _poRepository.GetOrderWithItemsAndSupplierAsync(orderId)
+                ?? throw new Exception("Order not found.");
+            if (order.Status != PurchaseOrderStatus.Draft)
+                throw new Exception("Items can only be removed from Draft orders.");
+
+            var item = order.Items.FirstOrDefault(i => i.Id == itemId)
+                ?? throw new Exception("Item not found.");
+            order.Items.Remove(item);
+            order.TotalAmount = order.Items.Sum(i => i.TotalLineCost);
+            await _poRepository.SaveChangesAsync();
+        }
+
+        public async Task<OrderStatisticsDto> GetStatisticsAsync()
+        {
+            return await _poRepository.GetStatisticsAsync();
         }
     }
 }

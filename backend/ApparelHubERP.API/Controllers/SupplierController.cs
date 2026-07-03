@@ -19,6 +19,20 @@ namespace ApparelHubERP.API.Controllers
             return Ok(suppliers);
         }
 
+        [HttpGet("filtered")]
+        public async Task<IActionResult> GetFiltered([FromQuery] SupplierFilterDto filter)
+        {
+            var result = await _supplierService.GetFilteredAsync(filter);
+            return Ok(result);
+        }
+
+        [HttpGet("deleted")]
+        public async Task<IActionResult> GetDeleted()
+        {
+            var result = await _supplierService.GetDeletedAsync();
+            return Ok(result);
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -70,6 +84,51 @@ namespace ApparelHubERP.API.Controllers
                 if (!result)
                     return NotFound(new { message = "Supplier not found." });
                 return Ok(new { message = "Supplier status toggled successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        // ✅ NEW: Soft Delete
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> SoftDelete(int id)
+        {
+            try
+            {
+                await _supplierService.SoftDeleteAsync(id);
+                return Ok(new { message = "Supplier soft-deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        // ✅ NEW: Restore
+        [HttpPatch("{id}/restore")]
+        public async Task<IActionResult> Restore(int id)
+        {
+            try
+            {
+                await _supplierService.RestoreAsync(id);
+                return Ok(new { message = "Supplier restored successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        // ✅ NEW: Bulk Delete
+        [HttpDelete("bulk-delete")]
+        public async Task<IActionResult> BulkDelete([FromBody] BulkOperationDto dto)
+        {
+            try
+            {
+                await _supplierService.BulkDeleteAsync(dto);
+                return Ok(new { message = $"{dto.Ids.Count} suppliers deleted successfully." });
             }
             catch (Exception ex)
             {

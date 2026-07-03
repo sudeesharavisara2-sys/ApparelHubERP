@@ -1,4 +1,5 @@
-﻿using ApparelHubERP.Core.Entities;
+﻿using ApparelHubERP.Core.DTOs.Procurement;
+using ApparelHubERP.Core.Entities;
 
 namespace ApparelHubERP.Core.Interfaces.Repositories
 {
@@ -12,5 +13,11 @@ namespace ApparelHubERP.Core.Interfaces.Repositories
         void Update(PurchaseOrder order);
         Task<string> GeneratePONumberAsync();
         Task SaveChangesAsync();
+
+        // ✅ NEW: Advanced Methods
+        Task<PagedResult<PurchaseOrder>> GetFilteredAsync(PurchaseOrderFilterDto filter, CancellationToken cancellationToken = default);
+        Task<IEnumerable<PurchaseOrder>> GetDeletedAsync(CancellationToken cancellationToken = default);
+        Task BulkDeleteAsync(IEnumerable<int> ids, CancellationToken cancellationToken = default);
+        Task<OrderStatisticsDto> GetStatisticsAsync(CancellationToken cancellationToken = default);
     }
 }

@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 function Dashboard() {
@@ -16,22 +16,27 @@ function Dashboard() {
     };
 
     return (
-        <div className="dashboard-page">
+        <div className="dashboard-page fade-in">
             <div className="dashboard-card">
-                <h1>ApparelHub ERP</h1>
-                <p>Welcome, {user.username}</p>
+                <div className="logo">ApparelHub ERP</div>
+                <p className="subtitle">Welcome back, {user.username}</p>
 
-                <div className="role-box">
+                <div className="role-badge">
                     <span>Your Role</span>
                     <strong>{user.role}</strong>
                 </div>
 
-                <p className="small-text">
-                    Dashboard Path: <strong>{user.dashboardUrl || "/dashboard"}</strong>
-                </p>
+                <div className="dashboard-grid">
+                    <Link to="/suppliers" className="btn btn-primary">
+                        📦 Suppliers
+                    </Link>
+                    <Link to="/purchase-orders" className="btn btn-primary">
+                        📋 Orders
+                    </Link>
+                </div>
 
-                <button className="btn primary" onClick={handleLogout}>
-                    Logout
+                <button onClick={handleLogout} className="btn btn-danger btn-full">
+                    🚪 Logout
                 </button>
             </div>
         </div>

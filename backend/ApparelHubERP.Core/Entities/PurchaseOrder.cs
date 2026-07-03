@@ -27,5 +27,22 @@ namespace ApparelHubERP.Core.Entities
         public Supplier Supplier { get; set; } = null!;
 
         public ICollection<PurchaseOrderItem> Items { get; set; } = [];
+
+        // ✅ NEW: Soft Delete Properties
+        public bool IsDeleted { get; set; } = false;
+        public DateTime? DeletedAt { get; set; }
+
+        // ✅ NEW: Soft Delete Methods
+        public void SoftDelete()
+        {
+            IsDeleted = true;
+            DeletedAt = DateTime.UtcNow;
+        }
+
+        public void Restore()
+        {
+            IsDeleted = false;
+            DeletedAt = null;
+        }
     }
 }
