@@ -9,15 +9,25 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Database Configuration
 builder.Services.AddDbContext<ApparelHubERPContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<DbContext>(provider =>
     provider.GetRequiredService<ApparelHubERPContext>());
 
+// Services Registration
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+// ✅ Added from dev-yathushiha
+builder.Services.AddScoped<IInventoryService, InventoryService>(provider =>
+{
+    var context = provider.GetRequiredService<ApparelHubERPContext>();
+    return new InventoryService(context);
+});
+
+// CORS Configuration
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendPolicy", policy =>
@@ -28,6 +38,7 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Authentication & JWT Configuration
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -47,16 +58,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization();
-<<<<<<< HEAD
-
-=======
-//builder.Services.AddOpenApi();
-builder.Services.AddSwaggerGen();
->>>>>>> origin/dev-yathushiha
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-<<<<<<< HEAD
+// ✅ Swagger Generation with JWT Bearer Security (Kept from HEAD)
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
@@ -65,14 +70,6 @@ builder.Services.AddSwaggerGen(options =>
         Title = "ApparelHubERP API",
         Description = "Official API documentation for the ApparelHub ERP System."
     });
-=======
-// ✅ IInventoryService register
-builder.Services.AddScoped<IInventoryService, InventoryService>(provider =>
-{
-    var context = provider.GetRequiredService<ApparelHubERPContext>();
-    return new InventoryService(context);
-});
->>>>>>> origin/dev-yathushiha
 
     options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
@@ -102,24 +99,15 @@ builder.Services.AddScoped<IInventoryService, InventoryService>(provider =>
 
 var app = builder.Build();
 
+// HTTP Request Pipeline
 if (app.Environment.IsDevelopment())
 {
-<<<<<<< HEAD
-=======
-    // app.MapOpenApi();
-
->>>>>>> origin/dev-yathushiha
     app.UseSwagger();
 
     app.UseSwaggerUI(c =>
     {
-<<<<<<< HEAD
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "ApparelHubERP API v1");
-        options.RoutePrefix = string.Empty;
-=======
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "ApparelHubERP API v1");
         c.RoutePrefix = string.Empty;
->>>>>>> origin/dev-yathushiha
     });
 
     var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
@@ -142,14 +130,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseCors("FrontendPolicy");
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
+// Database Seeding
 using (var scope = app.Services.CreateScope())
 {
     try
