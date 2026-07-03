@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Text;
+using ApparelHubERP.Core.Interfaces;
 using ApparelHubERP.Core.Interfaces.Services;
 using ApparelHubERP.Core.Services;
 using ApparelHubERP.Infrastructure.Data;
@@ -17,6 +18,7 @@ builder.Services.AddScoped<DbContext>(provider =>
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ApparelHubERP.Core.Interfaces.IPOSService, ApparelHubERP.Infrastructure.Services.POSService>();
 
 builder.Services.AddCors(options =>
 {

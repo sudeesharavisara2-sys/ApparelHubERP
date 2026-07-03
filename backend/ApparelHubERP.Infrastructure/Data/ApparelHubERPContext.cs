@@ -14,5 +14,9 @@ namespace ApparelHubERP.Infrastructure.Data
 
         // ✅ Login සඳහා Users ටේබල් එක add කරන්න
         public DbSet<User> Users { get; set; }
+
+        public DbSet<Product> Products { get; set; } = null!;
+        public DbSet<Sale> Sales { get; set; } = null!;
+        public DbSet<SaleItem> SaleItems { get; set; } = null!;
     }
 }
