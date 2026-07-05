@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { forgotPassword } from "../services/authService";
+import Logo from "../components/Logo"; 
+import "./AuthCommon.css";
 
 function ForgotPassword() {
     const navigate = useNavigate();
@@ -21,8 +23,11 @@ function ForgotPassword() {
     };
 
     return (
+        
         <div className="auth-page">
+            
             <form className="auth-card" onSubmit={handleSendOtp}>
+                <div style={{ textAlign: "center" }}><Logo /></div><br></br>
                 <h2>Forgot Password</h2>
                 <p>Enter your email to receive reset OTP</p>
 
