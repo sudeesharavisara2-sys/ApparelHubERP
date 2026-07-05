@@ -8,6 +8,8 @@ public interface IAuthService
     Task<bool> RegisterAsync(RegisterDto registerDto);
     Task<bool> VerifyOtpAsync(VerifyOtpDto verifyOtpDto);
 
+    Task<bool> ResendOtpAsync(string email);
+
     // ✅ Forget Password Methods
     Task<bool> ForgotPasswordAsync(ForgotPasswordDto forgotPasswordDto);
     Task<bool> VerifyResetOtpAsync(VerifyResetOtpDto verifyResetOtpDto);

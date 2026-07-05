@@ -27,13 +27,15 @@ public class AuthService : IAuthService
     {
         // Accessing the generic User DbSet
         var user = await _context.Set<User>()
-            .FirstOrDefaultAsync(u => u.Username == loginDto.Username);
+            .FirstOrDefaultAsync(u => u.Username == loginDto.Username || u.Email == loginDto.Username);
 
         if (user == null)
             return null;
 
         if (!VerifyPassword(loginDto.Password, user.PasswordHash))
             return null;
+
+
 
         // ✅ Check if the user's email is verified before allowing login
         if (!user.IsEmailVerified)
@@ -195,11 +197,40 @@ public class AuthService : IAuthService
         return true;
     }
 
+    public async Task<bool> ResendOtpAsync(string email)
+    {
+        var user = await _context.Set<User>().FirstOrDefaultAsync(u => u.Email == email);
+
+        if (user == null || user.IsEmailVerified)
+            return false;
+
+        // Generate a new OTP
+        var newOtp = GenerateOtp();
+        user.OtpCode = newOtp;
+        user.OtpExpiry = DateTime.UtcNow.AddMinutes(5);
+
+        await _context.SaveChangesAsync();
+
+        // Send the new OTP via email
+        try
+        {
+            var emailService = new EmailService(_configuration);
+            await emailService.SendOtpEmailAsync(user.Email, newOtp);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Resend OTP email failed: {ex.Message}");
+            return false;
+        }
+
+        return true;
+    }
+
     // ✅ Reset Password - Update user credentials with new password
     public async Task<bool> ResetPasswordAsync(ResetPasswordDto resetPasswordDto)
     {
         var user = await _context.Set<User>()
-            .FirstOrDefaultAsync(u => u.Email == resetPasswordDto.Email); // Fixed syntax error here
+            .FirstOrDefaultAsync(u => u.Email == resetPasswordDto.Email); 
 
         if (user == null)
             return false;
@@ -257,7 +288,7 @@ public class AuthService : IAuthService
             "SalesCashier" => "/dashboard/pos",
             "ExecutiveBoard" => "/dashboard/executive",
             _ => "/dashboard"
-        }; // Fixed switch missing semicolon here
+        }; 
     }
 
     private bool VerifyPassword(string password, string hashedPassword)

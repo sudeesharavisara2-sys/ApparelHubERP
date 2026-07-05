@@ -1,27 +1,43 @@
 import { Link } from "react-router-dom";
+import "./AuthCommon.css";
 
 function Landing() {
     return (
-        <div className="landing-page">
-            <div className="landing-card">
-                <div className="badge">ERP System</div>
+        <div className="auth-page">
+            <div className="auth-card landing-card">
 
-                <h1>ApparelHub ERP</h1>
+                
 
+                {/* Main Brand */}
+                <h1 className="brand-logo">
+                    Apparel<span>Hub</span>
+                    <small>ERP</small>
+                </h1>
                 <p>
-                    Smart apparel management system for employees, inventory, suppliers,
-                    sales, and business analytics.
+
                 </p>
 
+            
+
+                {/* Description */}
+                <p className="landing-description">
+                    A complete Enterprise Resource Planning solution developed
+                    for apparel businesses. Manage employees, inventory,
+                    suppliers, procurement, payroll, sales, and business
+                    operations through one centralized platform.
+                </p>
+
+                {/* Buttons */}
                 <div className="landing-actions">
-                    <Link to="/login" className="btn primary">
-                        Get Started
+                    <Link to="/login" className="btn primary full">
+                        Login
                     </Link>
 
-                    <Link to="/register" className="btn secondary">
+                    <Link to="/register" className="btn secondary full">
                         Create Account
                     </Link>
                 </div>
+
             </div>
         </div>
     );
