@@ -17,6 +17,7 @@ builder.Services.AddScoped<DbContext>(provider =>
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 
 builder.Services.AddCors(options =>
 {
