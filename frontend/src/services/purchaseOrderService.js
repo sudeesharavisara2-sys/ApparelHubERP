@@ -1,7 +1,6 @@
 import api from '../api/axiosConfig';
 
 export const purchaseOrderService = {
-  // Basic CRUD
   getAll: async () => {
     const response = await api.get('/api/PurchaseOrder');
     return response.data;
@@ -30,8 +29,6 @@ export const purchaseOrderService = {
     const response = await api.get('/api/PurchaseOrder/reorder/suggestions');
     return response.data;
   },
-
-  // ✅ Advanced methods – MUST HAVE THESE!
   getFiltered: async (params = {}) => {
     const response = await api.get('/api/PurchaseOrder/filtered', { params });
     return response.data;

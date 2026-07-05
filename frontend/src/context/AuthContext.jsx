@@ -10,9 +10,11 @@ export function AuthProvider({ children }) {
     });
 
     const saveUser = (data) => {
-        localStorage.setItem("user", JSON.stringify(data));
+        // ✅ FIX: Extract the actual user object from { token, user }
+        const userData = data.user || data;
+        localStorage.setItem("user", JSON.stringify(userData));
         localStorage.setItem("token", data.token);
-        setUser(data);
+        setUser(userData);
     };
 
     const logout = () => {

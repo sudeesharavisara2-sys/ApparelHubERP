@@ -1,116 +1,138 @@
-import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { Truck, ClipboardList, CheckCircle2, Package, Radio, TrendingUp, AlertTriangle } from 'lucide-react';
-import { StatCard } from '../components/common/StatCard';
-import { GRADIENTS, INK, MUTE } from '../theme';
+import { useState, useEffect } from "react";
+import { Truck, ClipboardList, Check, PackageCheck, ChevronRight } from "lucide-react";
+import { purchaseOrderService } from "../services/purchaseOrderService";
+import { supplierService } from "../services/supplierService";
+import { COLORS } from "../theme";
 
-const Workflow = () => {
-  const steps = [
-    { icon: Radio, title: "Sign in", desc: "Procurement officer authenticates.", grad: GRADIENTS.violet },
-    { icon: Truck, title: "Manage suppliers", desc: "Add or update suppliers on file.", grad: GRADIENTS.sky },
-    { icon: AlertTriangle, title: "Low-stock alert", desc: "Inventory flags a product below threshold.", grad: GRADIENTS.coral },
-    { icon: ClipboardList, title: "Create order", desc: "Select a supplier and raise an order.", grad: GRADIENTS.gold },
-    { icon: Package, title: "Receive items", desc: "Delivered goods are logged against the order.", grad: GRADIENTS.teal },
-    { icon: TrendingUp, title: "Reporting", desc: "Analytics reads procurement data.", grad: GRADIENTS.violet },
-  ];
+const statusStyle = {
+  Pending: "bg-amber-100 text-amber-800",
+  Approved: "bg-blue-100 text-blue-800",
+  Ordered: "bg-indigo-100 text-indigo-800",
+  Received: "bg-emerald-100 text-emerald-800",
+  Cancelled: "bg-red-100 text-red-800",
+};
 
+// Complete Tailwind StatCard Component
+export const StatCard = ({ label, value, icon: Icon, color }) => {
   return (
-    <div className="max-w-2xl mt-6">
-      <h3 className="text-lg font-bold mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif", color: INK }}>⚙️ Procurement Workflow</h3>
-      {steps.map((s, i) => {
-        const Icon = s.icon;
-        return (
-          <div key={i} className="flex gap-4">
-            <div className="flex flex-col items-center">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-white shadow-md" style={{ background: s.grad }}>
-                <Icon size={17} />
-              </div>
-              {i < steps.length - 1 && <div className="w-0.5 flex-1" style={{ background: "linear-gradient(#E4DEF9, #E4DEF9)", minHeight: "30px" }} />}
-            </div>
-            <div className="pb-7">
-              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, color: INK }}>{s.title}</div>
-              <div className="text-sm mt-0.5" style={{ color: MUTE }}>{s.desc}</div>
-            </div>
-          </div>
-        );
-      })}
+    <div className="bg-white rounded-2xl p-5 border shadow-sm flex items-center justify-between w-full" style={{ borderColor: "#E2E8F0" }}>
+      <div>
+        <h3 className="text-3xl font-bold m-0" style={{ color: "#1A0E3E" }}>{value !== undefined ? value : 0}</h3>
+        <p className="text-sm font-medium mt-1 m-0" style={{ color: "#64748B" }}>{label}</p>
+      </div>
+      <div 
+        className="w-12 h-12 rounded-xl flex items-center justify-center text-white flex-shrink-0" 
+        style={{ backgroundColor: color }}
+      >
+        <Icon size={22} />
+      </div>
     </div>
   );
 };
 
-function Dashboard() {
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
+export default function Dashboard() {
+  const [stats, setStats] = useState({ suppliers: 0, active: 0, open: 0, received: 0 });
+  const [recentOrders, setRecentOrders] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data - will be replaced with real API data
-  const suppliers = [
-    { id: 1, name: "ABC Textile", isActive: true },
-    { id: 2, name: "XYZ Garments", isActive: true },
-    { id: 3, name: "Best Fabric", isActive: false },
-  ];
-  const orders = [
-    { id: 1, supplierId: 1, status: "Received", orderDate: "2026-06-28" },
-    { id: 2, supplierId: 2, status: "Approved", orderDate: "2026-07-01" },
-    { id: 3, supplierId: 1, status: "Pending", orderDate: "2026-07-04" },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [suppliersData, ordersData] = await Promise.all([
+          supplierService.getAll().catch(() => []),
+          purchaseOrderService.getAll().catch(() => []),
+        ]);
+        
+        const safeSuppliers = Array.isArray(suppliersData) ? suppliersData : [];
+        const safeOrders = Array.isArray(ordersData) ? ordersData : [];
 
-  if (!user) {
-    navigate("/login");
-    return null;
-  }
+        setSuppliers(safeSuppliers);
+        setRecentOrders(safeOrders.slice(0, 4));
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+        setStats({
+          suppliers: safeSuppliers.length,
+          active: safeSuppliers.filter((s) => s && (s.isActive === true || s.status === "Active" || s.isActive === undefined)).length,
+          open: safeOrders.filter((p) => p && !["Received", "Cancelled"].includes(p.status)).length,
+          received: safeOrders.filter((p) => p && p.status === "Received").length,
+        });
+      } catch (err) {
+        console.error("Dashboard engine error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const supplierName = (sId) => {
+    if (!sId || !Array.isArray(suppliers)) return "Unknown";
+    const found = suppliers.find((s) => s && (s.id === sId || s.supplierId === sId));
+    return found?.name || found?.supplierName || "Unknown";
   };
 
-  const active = suppliers.filter((s) => s.isActive === true).length;
-  const openPOs = orders.filter((p) => !["Received", "Cancelled"].includes(p.status)).length;
-  const received = orders.filter((p) => p.status === "Received").length;
+  if (loading) return <div className="text-center py-12 text-slate-400">Loading dashboard data...</div>;
 
   return (
-    <div className="min-h-screen p-6" style={{
-      background: 'radial-gradient(circle at top left, rgba(37, 99, 235, 0.16), transparent 34%), radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.15), transparent 34%), #f8fafc'
-    }}>
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
-            <p className="text-gray-500">Welcome back, <span className="font-semibold">{user.username}</span></p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="bg-blue-50 rounded-xl px-4 py-2 border border-blue-100">
-              <span className="text-sm text-gray-500">Role</span>
-              <strong className="text-blue-600 block">{user.role}</strong>
+    <div className="flex flex-col gap-6 w-full box-border fade-in">
+      
+      {/* 4-Column Responsive Layout Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+        <StatCard label="Total Suppliers" value={stats.suppliers} icon={Truck} color="#6366f1" />
+        <StatCard label="Active Suppliers" value={stats.active} icon={Check} color="#10B981" />
+        <StatCard label="Open Purchase Orders" value={stats.open} icon={ClipboardList} color={COLORS?.gold || "#F59E0B"} />
+        <StatCard label="Items Received" value={stats.received} icon={PackageCheck} color="#ec4899" />
+      </div>
+
+      {/* Module Workflow Section */}
+      <div className="bg-white rounded-2xl p-5 border shadow-sm" style={{ borderColor: COLORS?.border || "#E2E8F0" }}>
+        <h3 className="text-base font-semibold m-0 mb-4" style={{ color: COLORS?.dark || "#1A0E3E" }}>Module Workflow</h3>
+        <div className="flex flex-wrap items-center gap-2">
+          {[
+            "Login", "Manage Suppliers", "Low Stock Alert", "Create PO", 
+            "Supplier Accepts", "Receive Items", "Inventory Updated", "Analytics Reads Data"
+          ].map((step, i, arr) => (
+            <div key={step} className="flex items-center gap-2">
+              <span className="px-3 py-1.5 rounded-full text-xs font-medium" style={{ background: COLORS?.slate || "#F1F5F9", color: COLORS?.slateText || "#64748B" }}>
+                {step}
+              </span>
+              {i < arr.length - 1 && <ChevronRight size={14} style={{ color: COLORS?.slateText || "#64748B" }} />}
             </div>
-            <button className="btn danger py-2 px-4 text-sm rounded-xl" onClick={handleLogout}>
-              Logout
-            </button>
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          <div className="flex flex-wrap gap-3">
-            <StatCard label="Active Suppliers" value={active} sub={`${suppliers.length} on file`} grad={GRADIENTS.violet} icon={Truck} />
-            <StatCard label="Open Orders" value={openPOs} sub="awaiting action" grad={GRADIENTS.gold} icon={ClipboardList} />
-            <StatCard label="Received" value={received} sub="stock reconciled" grad={GRADIENTS.teal} icon={CheckCircle2} />
-            <StatCard label="Total Orders" value={orders.length} sub="all time" grad={GRADIENTS.sky} icon={Package} />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Link to="/suppliers" className="btn primary py-4 text-base rounded-xl">
-              📦 Manage Suppliers
-            </Link>
-            <Link to="/purchase-orders" className="btn primary py-4 text-base rounded-xl">
-              📋 Purchase Orders
-            </Link>
-          </div>
-
-          <Workflow />
+          ))}
         </div>
       </div>
+
+      {/* Recent Purchase Orders Feed Section */}
+      <div className="bg-white rounded-2xl p-5 border shadow-sm" style={{ borderColor: COLORS?.border || "#E2E8F0" }}>
+        <h3 className="text-base font-semibold m-0 mb-4" style={{ color: COLORS?.dark || "#1A0E3E" }}>Recent Purchase Orders</h3>
+        <div className="flex flex-col divide-y" style={{ borderColor: COLORS?.border || "#E2E8F0" }}>
+          {Array.isArray(recentOrders) && recentOrders.map((p) => {
+            const orderId = p?.id || p?.purchaseOrderId || "N/A";
+            const currentSupplierId = p?.supplierId;
+            const currentStatus = p?.status || "Pending";
+
+            return (
+              <div key={orderId} className="flex items-center justify-between py-3 text-sm">
+                <div>
+                  <p className="font-semibold m-0 mb-0.5" style={{ color: COLORS?.dark || "#1A0E3E" }}>PO-{orderId}</p>
+                  <p className="text-xs m-0" style={{ color: COLORS?.slateText || "#64748B" }}>
+                    {supplierName(currentSupplierId)} • {p?.orderDate?.slice(0, 10) || "N/A"}
+                  </p>
+                </div>
+                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${statusStyle[currentStatus] || "bg-slate-100 text-slate-700"}`}>
+                  {currentStatus}
+                </span>
+              </div>
+            );
+          })}
+          {(!recentOrders || recentOrders.length === 0) && (
+            <div className="py-4 text-center text-sm" style={{ color: COLORS?.slateText || "#64748B" }}>
+              No recent orders found
+            </div>
+          )}
+        </div>
+      </div>
+
     </div>
   );
 }
-
-export default Dashboard;

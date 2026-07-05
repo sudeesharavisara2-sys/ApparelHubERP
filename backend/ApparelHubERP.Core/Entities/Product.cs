@@ -25,9 +25,6 @@ namespace ApparelHubERP.Core.Entities
         // INVENTORY & STOCK
         // ============================================================
         public int StockQuantity { get; set; }
-        public int ReorderLevel { get; set; }           // Minimum stock before reorder
-        public int ReorderQuantity { get; set; } = 10;  // Default reorder quantity
-        public int MaxStockLevel { get; set; } = 100;   // Maximum stock capacity
 
         // ============================================================
         // PRICING
@@ -49,12 +46,6 @@ namespace ApparelHubERP.Core.Entities
         // ============================================================
         public bool IsActive { get; set; } = true;
         public bool IsDiscontinued { get; set; } = false;
-
-        // ============================================================
-        // MEDIA & DESCRIPTION
-        // ============================================================
-        public string? Description { get; set; }
-        public string? ImageUrl { get; set; }
 
         // ============================================================
         // AUDIT
@@ -91,23 +82,12 @@ namespace ApparelHubERP.Core.Entities
         // METHODS
         // ============================================================
 
-        /// <summary>
-        /// Update stock quantity
-        /// </summary>
         public void UpdateStock(int quantity)
         {
             StockQuantity += quantity;
             UpdatedAt = DateTime.UtcNow;
         }
 
-        /// <summary>
-        /// Check if product can be ordered (active and not discontinued)
-        /// </summary>
-        public bool CanBeOrdered => IsActive && !IsDiscontinued;
-
-        /// <summary>
-        /// Calculate suggested reorder quantity
-        /// </summary>
         public int GetSuggestedReorderQuantity()
         {
             if (StockQuantity >= ReorderLevel) return 0;

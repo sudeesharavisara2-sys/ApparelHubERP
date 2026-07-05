@@ -1,14 +1,14 @@
 /* ============================================================
-   FONTS – MUST BE AT THE TOP!
+   TAILWIND DIRECTIVES (Must be at the top)
    ============================================================ */
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
 /* ============================================================
-   TAILWIND DIRECTIVES (if using Tailwind)
+   FONTS
    ============================================================ */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
 
 /* ============================================================
    GLOBAL RESET & BASE
@@ -63,43 +63,6 @@ a {
 }
 .auth-card.large {
     max-width: 520px;
-}
-
-.badge {
-    display: inline-block;
-    padding: 8px 16px;
-    background: #dbeafe;
-    color: #2563eb;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 700;
-    margin-bottom: 18px;
-}
-
-h1 {
-    font-size: 52px;
-    font-weight: 800;
-    margin-bottom: 14px;
-    color: #0f172a;
-}
-h2 {
-    font-size: 30px;
-    font-weight: 800;
-    margin-bottom: 8px;
-    color: #0f172a;
-}
-
-p {
-    color: #64748b;
-    line-height: 1.7;
-    margin-bottom: 22px;
-}
-
-.landing-actions {
-    display: flex;
-    gap: 14px;
-    justify-content: center;
-    margin-top: 28px;
 }
 
 /* ============================================================
@@ -191,245 +154,18 @@ p {
 }
 
 /* ============================================================
-   FORMS
-   ============================================================ */
-input,
-select {
-    width: 100%;
-    padding: 14px 16px;
-    margin-bottom: 14px;
-    border: 1px solid #cbd5e1;
-    border-radius: 14px;
-    outline: none;
-    font-family: inherit;
-    font-size: 14px;
-    background: white;
-}
-input:focus,
-select:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
-}
-
-label {
-    display: block;
-    font-weight: 600;
-    color: #334155;
-    font-size: 14px;
-    margin-bottom: 4px;
-}
-
-.error {
-    background: #fee2e2;
-    color: #b91c1c;
-    padding: 12px 14px;
-    border-radius: 12px;
-    margin-bottom: 14px;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.success {
-    background: #dcfce7;
-    color: #166534;
-    padding: 12px 14px;
-    border-radius: 12px;
-    margin-bottom: 14px;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.link {
-    display: block;
-    text-align: right;
-    margin-top: 12px;
-    color: #2563eb;
-    font-size: 14px;
-    font-weight: 600;
-}
-.link:hover {
-    text-decoration: underline;
-}
-
-.small-text {
-    margin-top: 18px;
-    margin-bottom: 0;
-    text-align: center;
-    font-size: 14px;
-}
-.small-text a {
-    color: #2563eb;
-    font-weight: 700;
-}
-
-.role-box {
-    background: #f1f5f9;
-    border-radius: 18px;
-    padding: 20px;
-    margin-bottom: 24px;
-}
-.role-box span {
-    color: #64748b;
-    display: block;
-    margin-bottom: 6px;
-}
-.role-box strong {
-    font-size: 24px;
-    color: #2563eb;
-}
-
-/* ============================================================
-   CARDS
-   ============================================================ */
-.card {
-    background: white;
-    border-radius: 20px;
-    padding: 28px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
-    border: 1px solid #e2e8f0;
-    transition: box-shadow 0.2s;
-}
-.card:hover {
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
-}
-
-.card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid #e2e8f0;
-}
-.card-title {
-    font-weight: 700;
-    font-size: 18px;
-    color: #0f172a;
-}
-.card-subtitle {
-    color: #94a3b8;
-    font-size: 14px;
-}
-
-/* ============================================================
-   TABLES
-   ============================================================ */
-.table-wrapper {
-    overflow-x: auto;
-    border-radius: 16px;
-    border: 1px solid #e2e8f0;
-    background: white;
-}
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-}
-.table thead {
-    background: #f1f5f9;
-}
-.table th {
-    padding: 14px 18px;
-    text-align: left;
-    font-weight: 600;
-    color: #475569;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-.table td {
-    padding: 14px 18px;
-    border-bottom: 1px solid #e2e8f0;
-    color: #1e293b;
-}
-.table tbody tr:hover {
-    background: #f8fafc;
-}
-.table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-/* ============================================================
-   BADGES
-   ============================================================ */
-.badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 14px;
-    font-size: 12px;
-    font-weight: 600;
-    border-radius: 999px;
-    line-height: 1.6;
-}
-.badge-active {
-    background: #dcfce7;
-    color: #15803d;
-}
-.badge-inactive {
-    background: #fee2e2;
-    color: #dc2626;
-}
-.badge-draft {
-    background: #f1f5f9;
-    color: #475569;
-}
-.badge-pending {
-    background: #fef3c7;
-    color: #b45309;
-}
-.badge-approved {
-    background: #dbeafe;
-    color: #1d4ed8;
-}
-.badge-shipped {
-    background: #ede9fe;
-    color: #7c3aed;
-}
-.badge-received {
-    background: #dcfce7;
-    color: #15803d;
-}
-.badge-cancelled {
-    background: #fee2e2;
-    color: #dc2626;
-}
-.badge-danger {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
-/* ============================================================
-   DASHBOARD GRID (for quick links)
-   ============================================================ */
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin: 20px 0;
-}
-.dashboard-grid .btn {
-    padding: 18px 10px;
-    font-size: 16px;
-    border-radius: 16px;
-}
-
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
-@media (max-width: 600px) {
-    h1 { font-size: 38px; }
-    .landing-actions { flex-direction: column; }
-    .landing-card,
-    .auth-card,
-    .dashboard-card { padding: 26px; }
-    .dashboard-grid { grid-template-columns: 1fr; }
-    .table th, .table td { padding: 10px 12px; font-size: 12px; }
-}
-
-/* ============================================================
    ANIMATIONS
    ============================================================ */
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) translateX(var(--drift)) rotate(360deg); opacity: 0; }
+}
+
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(12px); }
     to { opacity: 1; transform: translateY(0); }

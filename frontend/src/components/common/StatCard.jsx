@@ -1,18 +1,17 @@
-// src/components/common/StatCard.jsx
-import { useCountUp } from '../../hooks/useCountUp';
-
-export const StatCard = ({ label, value, sub, grad, icon: Icon }) => {
-  const shown = useCountUp(value);
+export const StatCard = ({ label, value, sub, icon: Icon, color }) => {
   return (
-    <div className="flex-1 min-w-[150px] rounded-2xl p-4 relative overflow-hidden text-white shadow-lg" style={{ background: grad }}>
-      <div className="absolute -right-4 -top-4 opacity-25"><Icon size={72} /></div>
-      <div className="text-xs uppercase relative z-10" style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.08em", opacity: 0.85 }}>
-        {label}
+    <div className="bg-white rounded-2xl p-5 border shadow-sm flex items-center justify-between" style={{ borderColor: "#E2E8F0" }}>
+      <div>
+        <h3 className="text-3xl font-bold" style={{ color: "#1A0E3E" }}>{value}</h3>
+        <p className="text-sm font-medium mt-1" style={{ color: "#64748B" }}>{label}</p>
+        {sub && <p className="text-xs mt-0.5" style={{ color: "#94A3B8" }}>{sub}</p>}
       </div>
-      <div className="mt-1 text-4xl relative z-10" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700 }}>
-        {shown}
+      <div 
+        className="w-12 h-12 rounded-xl flex items-center justify-center text-white" 
+        style={{ backgroundColor: color }}
+      >
+        <Icon size={22} />
       </div>
-      {sub && <div className="text-xs mt-1 relative z-10" style={{ opacity: 0.9 }}>{sub}</div>}
     </div>
   );
 };

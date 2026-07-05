@@ -1,29 +1,23 @@
-// src/theme.js
-export const BG = "#F8F9FA";
-export const INK = "#1A0E3E";
-export const CORAL = "#FF6B6B";
-export const GOLD = "#FFB100";
-export const VIOLET = "#7C5CFF";
-export const TEAL = "#00C2A8";
-export const SKY = "#2F9BFF";
-export const MUTE = "#8A83A8";
-
-export const GRADIENTS = {
-  header: `linear-gradient(110deg, ${INK} 0%, #2A1A5E 45%, ${VIOLET} 100%)`,
-  coral: `linear-gradient(135deg, ${CORAL}, #FF9472)`,
-  gold: `linear-gradient(135deg, ${GOLD}, #FFD166)`,
-  violet: `linear-gradient(135deg, ${VIOLET}, #A78BFA)`,
-  teal: `linear-gradient(135deg, ${TEAL}, #4EE0C3)`,
-  sky: `linear-gradient(135deg, ${SKY}, #7ED0FF)`,
+export const COLORS = {
+  dark: "#1A0E3E",
+  darkLight: "#2A1A5E",
+  white: "#FFFFFF",
+  gold: "#F59E0B",
+  goldLight: "#FBBF24",
+  goldBg: "#FEF3C7",
+  slate: "#F1F5F9",
+  slateText: "#64748B",
+  border: "#E2E8F0",
+  success: "#10B981",
+  danger: "#EF4444",
+  warning: "#F59E0B",
+  info: "#3B82F6",
 };
 
-export const STATUS_FLOW = ["Pending", "Approved", "Received"];
-
-export const statusMeta = (status) => {
-  switch (status) {
-    case "Received": return { color: TEAL, grad: GRADIENTS.teal, label: "RECEIVED" };
-    case "Approved": return { color: SKY, grad: GRADIENTS.sky, label: "APPROVED" };
-    case "Cancelled": return { color: CORAL, grad: GRADIENTS.coral, label: "CANCELLED" };
-    default: return { color: VIOLET, grad: GRADIENTS.violet, label: "PENDING" };
-  }
+export const GRADIENTS = {
+  header: `linear-gradient(135deg, ${COLORS.dark} 0%, ${COLORS.darkLight} 100%)`,
+  gold: `linear-gradient(135deg, ${COLORS.gold}, ${COLORS.goldLight})`,
+  success: `linear-gradient(135deg, #10B981, #34D399)`,
+  danger: `linear-gradient(135deg, #EF4444, #F87171)`,
+  info: `linear-gradient(135deg, #3B82F6, #60A5FA)`,
 };

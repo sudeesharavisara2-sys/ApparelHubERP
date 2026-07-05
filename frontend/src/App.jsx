@@ -1,41 +1,40 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
-
-// Public Pages
+import { ToastProvider } from "./context/ToastContext";
+import Navbar from "./components/Navbar";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import VerifyOtp from "./pages/VerifyOtp";
 import ForgotPassword from "./pages/ForgotPassword";
+import VerifyOtp from "./pages/VerifyOtp";
 import VerifyResetOtp from "./pages/VerifyResetOtp";
 import ResetPassword from "./pages/ResetPassword";
-
-// Protected Pages (require authentication)
 import Dashboard from "./pages/Dashboard";
 import SuppliersPage from "./pages/SuppliersPage";
 import PurchaseOrdersPage from "./pages/PurchaseOrdersPage";
+import AlertsPage from "./pages/AlertsPage";
 
 function App() {
-    return (
-        <Routes>
-            {/* ============= PUBLIC ROUTES ============= */}
-            <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/verify-otp" element={<VerifyOtp />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/verify-reset-otp" element={<VerifyResetOtp />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
+  return (
+    <ToastProvider>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/verify-otp" element={<VerifyOtp />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/verify-reset-otp" element={<VerifyResetOtp />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
-            {/* ============= PROTECTED ROUTES ============= */}
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/suppliers" element={<ProtectedRoute><SuppliersPage /></ProtectedRoute>} />
-            <Route path="/purchase-orders" element={<ProtectedRoute><PurchaseOrdersPage /></ProtectedRoute>} />
+        <Route path="/dashboard" element={<ProtectedRoute><Navbar><Dashboard /></Navbar></ProtectedRoute>} />
+        <Route path="/suppliers" element={<ProtectedRoute><Navbar><SuppliersPage /></Navbar></ProtectedRoute>} />
+        <Route path="/purchase-orders" element={<ProtectedRoute><Navbar><PurchaseOrdersPage /></Navbar></ProtectedRoute>} />
+        <Route path="/alerts" element={<ProtectedRoute><Navbar><AlertsPage /></Navbar></ProtectedRoute>} />
 
-            {/* ============= FALLBACK ============= */}
-            <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-    );
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </ToastProvider>
+  );
 }
 
 export default App;
