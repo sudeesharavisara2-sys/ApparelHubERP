@@ -11,11 +11,9 @@ namespace ApparelHubERP.Core.Interfaces.Repositories
         void Update(Supplier supplier);
         Task<bool> ExistsAsync(int id);
         Task SaveChangesAsync();
-
-        // ✅ NEW: Advanced Methods
-        Task<PagedResult<Supplier>> GetFilteredAsync(SupplierFilterDto filter, CancellationToken cancellationToken = default);
-        Task<IEnumerable<Supplier>> GetDeletedAsync(CancellationToken cancellationToken = default);
-        Task BulkDeleteAsync(IEnumerable<int> ids, CancellationToken cancellationToken = default);
-        Task RestoreAsync(int id, CancellationToken cancellationToken = default);
+        Task<PagedResult<Supplier>> GetFilteredAsync(SupplierFilterDto filter);
+        Task<IEnumerable<Supplier>> GetDeletedAsync();
+        Task BulkDeleteAsync(IEnumerable<int> ids);
+        Task RestoreAsync(int id);
     }
 }

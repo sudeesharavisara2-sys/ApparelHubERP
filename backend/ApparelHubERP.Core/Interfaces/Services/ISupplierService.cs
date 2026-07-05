@@ -4,15 +4,16 @@ namespace ApparelHubERP.Core.Interfaces.Services
 {
     public interface ISupplierService
     {
-        Task<IEnumerable<SupplierResponseDto>> GetAllSuppliersAsync();
-        Task<SupplierResponseDto?> GetSupplierByIdAsync(int id);
-        Task<SupplierResponseDto> CreateSupplierAsync(CreateSupplierDto dto);
+        // Basic CRUD
+        Task<IEnumerable<SupplierDto>> GetAllSuppliersAsync();
+        Task<SupplierDto?> GetSupplierByIdAsync(int id);
+        Task<SupplierDto> CreateSupplierAsync(CreateSupplierDto dto);
         Task<bool> UpdateSupplierAsync(UpdateSupplierDto dto);
         Task<bool> ToggleSupplierStatusAsync(int id);
 
-        // ✅ NEW: Advanced Methods
-        Task<PagedResult<SupplierResponseDto>> GetFilteredAsync(SupplierFilterDto filter);
-        Task<IEnumerable<SupplierResponseDto>> GetDeletedAsync();
+        // Advanced
+        Task<PagedResult<SupplierDto>> GetFilteredAsync(SupplierFilterDto filter);
+        Task<IEnumerable<SupplierDto>> GetDeletedAsync();
         Task SoftDeleteAsync(int id);
         Task RestoreAsync(int id);
         Task BulkDeleteAsync(BulkOperationDto dto);

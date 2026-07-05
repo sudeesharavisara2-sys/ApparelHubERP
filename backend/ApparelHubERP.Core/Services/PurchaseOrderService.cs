@@ -14,6 +14,9 @@ namespace ApparelHubERP.Core.Services
         private readonly ISupplierRepository _supplierRepository = supplierRepository;
         private readonly IProductRepository _productRepository = productRepository;
 
+        // ============================================================
+        // MAPPER
+        // ============================================================
         private static async Task<PurchaseOrderResponseDto> MapToResponse(PurchaseOrder order)
         {
             return new PurchaseOrderResponseDto
@@ -23,9 +26,17 @@ namespace ApparelHubERP.Core.Services
                 OrderDate = order.OrderDate,
                 ExpectedDeliveryDate = order.ExpectedDeliveryDate,
                 TotalAmount = order.TotalAmount,
+                BudgetedAmount = order.BudgetedAmount,
+                Currency = order.Currency,
                 Status = order.Status,
                 Remarks = order.Remarks,
                 SupplierName = order.Supplier?.Name ?? "Unknown",
+                ResponseStatus = order.SupplierResponse?.Status.ToString() ?? "Pending",
+                Season = order.Season,
+                ApprovalStatus = order.ApprovalStatus,
+                PriceVariance = order.BudgetedAmount > 0
+                    ? ((order.TotalAmount - order.BudgetedAmount) / order.BudgetedAmount * 100)
+                    : 0,
                 Items = [.. order.Items.Select(i => new PurchaseOrderItemResponseDto
                 {
                     ProductId = i.ProductId,
@@ -33,10 +44,16 @@ namespace ApparelHubERP.Core.Services
                     QuantityOrdered = i.QuantityOrdered,
                     QuantityReceived = i.QuantityReceived,
                     UnitCost = i.UnitCost,
-                    TotalLineCost = i.TotalLineCost
+                    TotalLineCost = i.TotalLineCost,
+                    PreviousSeasonUnitCost = i.PreviousSeasonUnitCost,
+                    Season = i.Season
                 })]
             };
         }
+
+        // ============================================================
+        // BASIC CRUD
+        // ============================================================
 
         public async Task<PurchaseOrderResponseDto> CreatePurchaseOrderAsync(CreatePurchaseOrderDto dto)
         {
@@ -50,8 +67,11 @@ namespace ApparelHubERP.Core.Services
                 SupplierId = dto.SupplierId,
                 ExpectedDeliveryDate = dto.ExpectedDeliveryDate,
                 Remarks = dto.Remarks,
+                BudgetedAmount = dto.BudgetedAmount > 0 ? dto.BudgetedAmount : 0,
                 OrderDate = DateTime.UtcNow,
-                Status = PurchaseOrderStatus.Draft
+                Status = PurchaseOrderStatus.Draft,
+                ApprovalStatus = "Draft",
+                Season = dto.Season
             };
 
             decimal total = 0;
@@ -64,7 +84,9 @@ namespace ApparelHubERP.Core.Services
                 {
                     ProductId = itemDto.ProductId,
                     QuantityOrdered = itemDto.Quantity,
-                    UnitCost = itemDto.UnitCost
+                    UnitCost = itemDto.UnitCost,
+                    PreviousSeasonUnitCost = itemDto.PreviousSeasonUnitCost,
+                    Season = dto.Season
                 };
 
                 total += item.TotalLineCost;
@@ -114,13 +136,27 @@ namespace ApparelHubERP.Core.Services
                 throw new Exception("Cannot change status of a cancelled order.");
 
             order.Status = dto.Status;
+            if (dto.Status == PurchaseOrderStatus.Approved)
+            {
+                order.ApprovalStatus = "Approved";
+                order.ApprovedAt = DateTime.UtcNow;
+            }
             _poRepository.Update(order);
             await _poRepository.SaveChangesAsync();
 
             return await MapToResponse(order);
         }
 
+        // ✅ TWO ReceiveOrderAsync METHODS – ONE FOR INTERFACE, ONE WITH OPTIONAL PARAM
+
+        // This one matches the interface (IPurchaseOrderService.ReceiveOrderAsync(int))
         public async Task<PurchaseOrderResponseDto> ReceiveOrderAsync(int orderId)
+        {
+            return await ReceiveOrderAsync(orderId, null);
+        }
+
+        // This one is the full implementation with optional quantities
+        public async Task<PurchaseOrderResponseDto> ReceiveOrderAsync(int orderId, Dictionary<int, int>? receivedQuantities = null)
         {
             var order = await _poRepository.GetOrderWithItemsAndSupplierAsync(orderId)
                 ?? throw new Exception("Order not found.");
@@ -133,10 +169,11 @@ namespace ApparelHubERP.Core.Services
                 var product = await _productRepository.GetByIdAsync(item.ProductId);
                 if (product is not null)
                 {
-                    product.StockQuantity += item.QuantityOrdered;
+                    var receivedQty = receivedQuantities?.GetValueOrDefault(item.ProductId, item.QuantityOrdered) ?? item.QuantityOrdered;
+                    product.StockQuantity += receivedQty;
                     _productRepository.Update(product);
                 }
-                item.QuantityReceived = item.QuantityOrdered;
+                item.QuantityReceived = receivedQuantities?.GetValueOrDefault(item.ProductId, item.QuantityOrdered) ?? item.QuantityOrdered;
             }
 
             order.Status = PurchaseOrderStatus.Received;
@@ -161,7 +198,10 @@ namespace ApparelHubERP.Core.Services
             });
         }
 
-        // ✅ NEW: Advanced Methods
+        // ============================================================
+        // PAGINATION & FILTERING
+        // ============================================================
+
         public async Task<PagedResult<PurchaseOrderResponseDto>> GetFilteredAsync(PurchaseOrderFilterDto filter)
         {
             var result = await _poRepository.GetFilteredAsync(filter);
@@ -177,6 +217,10 @@ namespace ApparelHubERP.Core.Services
                 PageSize = result.PageSize
             };
         }
+
+        // ============================================================
+        // SOFT DELETE & BULK OPERATIONS
+        // ============================================================
 
         public async Task<IEnumerable<PurchaseOrderResponseDto>> GetDeletedAsync()
         {
@@ -205,10 +249,14 @@ namespace ApparelHubERP.Core.Services
 
         public async Task BulkDeleteAsync(BulkOperationDto dto)
         {
-            if (dto.Ids == null || !dto.Ids.Any())
+            if (dto.Ids == null || dto.Ids.Count == 0)
                 throw new Exception("No order IDs provided.");
             await _poRepository.BulkDeleteAsync(dto.Ids);
         }
+
+        // ============================================================
+        // ADDITIONAL ACTIONS
+        // ============================================================
 
         public async Task CancelOrderAsync(int id)
         {
@@ -237,7 +285,9 @@ namespace ApparelHubERP.Core.Services
                 {
                     ProductId = itemDto.ProductId,
                     QuantityOrdered = itemDto.Quantity,
-                    UnitCost = itemDto.UnitCost
+                    UnitCost = itemDto.UnitCost,
+                    PreviousSeasonUnitCost = itemDto.PreviousSeasonUnitCost,
+                    Season = order.Season
                 };
                 order.Items.Add(item);
                 total += item.TotalLineCost;
@@ -263,6 +313,116 @@ namespace ApparelHubERP.Core.Services
         public async Task<OrderStatisticsDto> GetStatisticsAsync()
         {
             return await _poRepository.GetStatisticsAsync();
+        }
+
+        // ============================================================
+        // ✅ ADVANCED FEATURES
+        // ============================================================
+
+        public async Task<SupplierOrderHistoryDto> GetSupplierOrderHistoryAsync(int supplierId)
+        {
+            var orders = await _poRepository.GetOrderHistoryBySupplierAsync(supplierId);
+            var supplier = await _supplierRepository.GetByIdAsync(supplierId);
+
+            var history = new SupplierOrderHistoryDto
+            {
+                SupplierId = supplierId,
+                SupplierName = supplier?.Name ?? "Unknown",
+                Orders = [.. orders.Select(o => new OrderHistoryItemDto
+                {
+                    Id = o.Id,
+                    PONumber = o.PONumber,
+                    OrderDate = o.OrderDate,
+                    TotalAmount = o.TotalAmount,
+                    Status = o.Status.ToString(),
+                    SupplierResponseStatus = o.SupplierResponse?.Status.ToString() ?? "Pending",
+                    ItemCount = o.Items.Count,
+                    Season = o.Season ?? "N/A",
+                    CurrentPrice = o.TotalAmount,
+                    PreviousSeasonPrice = o.Items.FirstOrDefault()?.PreviousSeasonUnitCost,
+                    PriceVariance = o.TotalAmount - (o.Items.FirstOrDefault()?.PreviousSeasonUnitCost ?? 0),
+                    PriceVariancePercentage = o.Items.FirstOrDefault()?.PreviousSeasonUnitCost != null
+                        ? $"{((o.TotalAmount - (o.Items.FirstOrDefault()?.PreviousSeasonUnitCost ?? 0)) / (o.Items.FirstOrDefault()?.PreviousSeasonUnitCost ?? 1) * 100):F1}%"
+                        : "N/A"
+                })]
+            };
+
+            List<OrderHistoryItemDto> orders1 = history.Orders;
+            var ordersList = orders1;
+            history.Summary = new OrderHistorySummaryDto
+            {
+                TotalOrders = ordersList.Count,
+                PendingOrders = ordersList.Count(o => o.Status == "PendingApproval" || o.Status == "Draft"),
+                AcceptedOrders = ordersList.Count(o => o.Status == "Approved" || o.Status == "Shipped"),
+                DeliveredOrders = ordersList.Count(o => o.Status == "Received"),
+                RejectedOrders = ordersList.Count(o => o.Status == "Cancelled"),
+                TotalSpent = ordersList.Sum(o => o.TotalAmount),
+                AverageOrderValue = ordersList.Count != 0 ? ordersList.Average(o => o.TotalAmount) : 0,
+                AveragePriceVariance = ordersList.Count != 0 ? ordersList.Average(o => o.PriceVariance) : 0
+            };
+
+            return history;
+        }
+
+        public async Task<SeasonalPriceDashboardDto> GetSeasonalPriceVariancesAsync(string? season = null)
+        {
+            var variances = await _poRepository.GetSeasonalPriceVariancesAsync(season);
+
+            var summary = new SummaryPriceStatsDto
+            {
+                AveragePriceIncrease = variances.Any() ? variances.Average(v => v.Variance) : 0,
+                ProductsWithPriceIncrease = variances.Count(v => v.VarianceStatus == "Increased"),
+                ProductsWithPriceDecrease = variances.Count(v => v.VarianceStatus == "Decreased"),
+                ProductsStable = variances.Count(v => v.VarianceStatus == "Stable"),
+                HighestPriceIncrease = variances.Any() ? variances.Max(v => v.Variance) : 0,
+                HighestPriceDecrease = variances.Any() ? variances.Min(v => v.Variance) : 0
+            };
+
+            return new SeasonalPriceDashboardDto
+            {
+                SeasonalVariances = [.. variances],
+                Summary = summary
+            };
+        }
+
+        public async Task<DeliveryValidationDto> ValidateDeliveryAsync(int orderId, Dictionary<int, int> receivedQuantities)
+        {
+            var order = await _poRepository.GetOrderWithItemsAndSupplierAsync(orderId)
+                ?? throw new Exception("Order not found.");
+
+            var validation = new DeliveryValidationDto
+            {
+                PurchaseOrderId = orderId,
+                PONumber = order.PONumber,
+                IsValid = true
+            };
+
+            foreach (var item in order.Items)
+            {
+                var receivedQty = receivedQuantities.GetValueOrDefault(item.ProductId, 0);
+                var itemValidation = new DeliveryItemValidationDto
+                {
+                    ProductId = item.ProductId,
+                    ProductName = item.Product?.Name ?? "Unknown",
+                    OrderedQuantity = item.QuantityOrdered,
+                    ReceivedQuantity = receivedQty,
+                    IsMatch = receivedQty == item.QuantityOrdered
+                };
+
+                if (!itemValidation.IsMatch)
+                {
+                    validation.IsValid = false;
+                    itemValidation.DiscrepancyMessage = $"Ordered: {item.QuantityOrdered}, Received: {receivedQty}";
+                }
+
+                validation.Items.Add(itemValidation);
+            }
+
+            validation.ValidationMessage = validation.IsValid
+                ? "All items match the order."
+                : "Some items have quantity discrepancies.";
+
+            return validation;
         }
     }
 }

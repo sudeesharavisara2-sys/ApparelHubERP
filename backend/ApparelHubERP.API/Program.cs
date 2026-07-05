@@ -6,8 +6,8 @@ using ApparelHubERP.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using ApparelHubERP.Core.Interfaces.Repositories;
-using ApparelHubERP.Infrastructure.Repositories;
+using ApparelHubERP.Core.Interfaces.Repositories;  // ✅ ADDED
+using ApparelHubERP.Infrastructure.Repositories;      // ✅ ADDED
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +21,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 // ============================================================
-// 🚀 PROCUREMENT DEPENDENCY INJECTION
+// 🚀 PROCUREMENT DEPENDENCY INJECTION (✅ ADDED)
 // ============================================================
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
 builder.Services.AddScoped<IPurchaseOrderRepository, PurchaseOrderRepository>();
@@ -101,7 +101,7 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
+    app.UseDeveloperExceptionPage(); // ✅ ADDED (helps debug 500 errors)
     app.UseSwagger();
     app.UseSwaggerUI(options =>
     {
@@ -129,9 +129,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.UseCors("FrontendPolicy");
+
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 
 using (var scope = app.Services.CreateScope())

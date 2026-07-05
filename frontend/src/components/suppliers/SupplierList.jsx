@@ -45,23 +45,18 @@ const SupplierList = () => {
   }, [page, pageSize, search, showDeleted]);
 
   useEffect(() => {
-    // Avoid calling setState synchronously inside effect to prevent cascading renders
     const t = setTimeout(() => {
       loadSuppliers();
     }, 0);
     return () => clearTimeout(t);
   }, [loadSuppliers]);
 
-  // Debounced search
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setSearch(value);
     setPage(1);
 
-    // Clear previous timeout
     if (searchTimeout) clearTimeout(searchTimeout);
-
-    // Debounce search by 500ms
     const timeout = setTimeout(() => {
       loadSuppliers();
     }, 500);
@@ -165,7 +160,6 @@ const SupplierList = () => {
         </div>
       </div>
 
-      {/* Search & Bulk Actions */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div className="flex items-center gap-2 flex-1 max-w-sm">
           <div className="relative flex-1">
@@ -190,7 +184,6 @@ const SupplierList = () => {
         )}
       </div>
 
-      {/* Table */}
       <div className="table-wrapper">
         <table className="table">
           <thead>
@@ -271,7 +264,6 @@ const SupplierList = () => {
         </table>
       </div>
 
-      {/* Pagination */}
       {!showDeleted && totalPages > 1 && (
         <div className="flex items-center justify-between mt-4">
           <span className="text-sm text-gray-500">

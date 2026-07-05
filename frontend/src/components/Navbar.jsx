@@ -1,56 +1,47 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { LayoutDashboard, Package, ShoppingCart, LogOut } from "lucide-react";
+import { TrendingUp, Truck, ClipboardList, Sparkles } from 'lucide-react';
+import { VIOLET, SKY, GOLD, TEAL } from '../theme';
 
-function Navbar() {
-    const { user, logout } = useAuth();
-    const navigate = useNavigate();
+export const Navbar = ({ tab, setTab }) => {
+  const items = [
+    { id: "overview", label: "Overview", icon: TrendingUp, color: VIOLET },
+    { id: "suppliers", label: "Suppliers", icon: Truck, color: SKY },
+    { id: "orders", label: "Purchase Orders", icon: ClipboardList, color: GOLD },
+    { id: "workflow", label: "Workflow", icon: Sparkles, color: TEAL },
+  ];
 
-    const handleLogout = () => {
-        logout();
-        navigate("/login");
-    };
+  return (
+    <nav className="flex gap-1 px-2">
+      {items.map((it) => {
+        const Icon = it.icon;
+        const active = tab === it.id;
+        return (
+          <button
+            key={it.id}
+            onClick={() => setTab(it.id)}
+            className="flex items-center gap-2 px-4 py-3 text-sm rounded-t-lg transition-all"
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              color: active ? "#fff" : "#B7ADE0",
+              background: active ? `${it.color}33` : "transparent",
+              borderBottom: active ? `3px solid ${it.color}` : "3px solid transparent",
+              fontWeight: 600,
+            }}
+          >
+            <Icon size={15} />
+            {it.label}
+          </button>
+        );
+      })}
+    </nav>
+  );
+};
 
-    if (!user) return null;
-
-    return (
-        <nav className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-50">
-            <div className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
-                <div className="flex items-center gap-2">
-                    <Link to="/dashboard" className="text-xl font-bold text-blue-600">
-                        ApparelHub
-                    </Link>
-                    <span className="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full">ERP</span>
-                </div>
-
-                <div className="flex items-center gap-6">
-                    <Link to="/dashboard" className="flex items-center gap-1 text-sm text-gray-600 hover:text-blue-600 transition">
-                        <LayoutDashboard size={18} />
-                        <span className="hidden sm:inline">Dashboard</span>
-                    </Link>
-                    <Link to="/suppliers" className="flex items-center gap-1 text-sm text-gray-600 hover:text-blue-600 transition">
-                        <Package size={18} />
-                        <span className="hidden sm:inline">Suppliers</span>
-                    </Link>
-                    <Link to="/purchase-orders" className="flex items-center gap-1 text-sm text-gray-600 hover:text-blue-600 transition">
-                        <ShoppingCart size={18} />
-                        <span className="hidden sm:inline">Orders</span>
-                    </Link>
-
-                    <div className="flex items-center gap-3 border-l border-gray-200 pl-4">
-                        <span className="text-sm text-gray-500 hidden md:inline">{user.username}</span>
-                        <button
-                            onClick={handleLogout}
-                            className="flex items-center gap-1 text-sm text-red-500 hover:text-red-600 transition"
-                        >
-                            <LogOut size={18} />
-                            <span className="hidden sm:inline">Logout</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </nav>
-    );
-}
-
-export default Navbar;
+export const LiveDot = () => {
+  const CORAL = "#FF6B6B";
+  return (
+    <span className="relative flex h-2 w-2">
+      <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: CORAL }} />
+      <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: CORAL }} />
+    </span>
+  );
+};

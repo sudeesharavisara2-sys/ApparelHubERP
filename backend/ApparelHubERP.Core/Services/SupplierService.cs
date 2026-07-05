@@ -1,18 +1,22 @@
 ﻿using ApparelHubERP.Core.DTOs.Procurement;
 using ApparelHubERP.Core.Entities;
 using ApparelHubERP.Core.Interfaces.Repositories;
-using ApparelHubERP.Core.Interfaces.Services;
+using ApparelHubERP.Core.Interfaces.Services;   // ✅ Only once
 
 namespace ApparelHubERP.Core.Services
 {
-    public class SupplierService(ISupplierRepository repository) : ISupplierService
+    public class SupplierService(ISupplierRepository _repository) : ISupplierService
     {
-        private readonly ISupplierRepository _repository = repository;
+        // _repository is available throughout the class; keep the rest of the file unchanged.
 
-        public async Task<IEnumerable<SupplierResponseDto>> GetAllSuppliersAsync()
+        // ============================================================
+        // BASIC CRUD
+        // ============================================================
+
+        public async Task<IEnumerable<SupplierDto>> GetAllSuppliersAsync()
         {
             var suppliers = await _repository.GetAllAsync();
-            return suppliers.Select(s => new SupplierResponseDto
+            return suppliers.Select(s => new SupplierDto
             {
                 Id = s.Id,
                 Name = s.Name,
@@ -21,28 +25,36 @@ namespace ApparelHubERP.Core.Services
                 Phone = s.Phone,
                 Address = s.Address,
                 IsActive = s.IsActive,
-                CreatedAt = s.CreatedAt
+                IsDeleted = s.IsDeleted,
+                CreatedAt = s.CreatedAt,
+                ProductCategories = s.ProductCategories,
+                AverageDeliveryDays = s.AverageDeliveryDays,
+                MinimumOrderValue = s.MinimumOrderValue
             });
         }
 
-        public async Task<SupplierResponseDto?> GetSupplierByIdAsync(int id)
+        public async Task<SupplierDto?> GetSupplierByIdAsync(int id)
         {
-            var supplier = await _repository.GetByIdAsync(id);
-            if (supplier is null) return null;
-            return new SupplierResponseDto
+            var s = await _repository.GetByIdAsync(id);
+            if (s == null) return null;
+            return new SupplierDto
             {
-                Id = supplier.Id,
-                Name = supplier.Name,
-                ContactPerson = supplier.ContactPerson,
-                Email = supplier.Email,
-                Phone = supplier.Phone,
-                Address = supplier.Address,
-                IsActive = supplier.IsActive,
-                CreatedAt = supplier.CreatedAt
+                Id = s.Id,
+                Name = s.Name,
+                ContactPerson = s.ContactPerson,
+                Email = s.Email,
+                Phone = s.Phone,
+                Address = s.Address,
+                IsActive = s.IsActive,
+                IsDeleted = s.IsDeleted,
+                CreatedAt = s.CreatedAt,
+                ProductCategories = s.ProductCategories,
+                AverageDeliveryDays = s.AverageDeliveryDays,
+                MinimumOrderValue = s.MinimumOrderValue
             };
         }
 
-        public async Task<SupplierResponseDto> CreateSupplierAsync(CreateSupplierDto dto)
+        public async Task<SupplierDto> CreateSupplierAsync(CreateSupplierDto dto)
         {
             var supplier = new Supplier
             {
@@ -52,13 +64,16 @@ namespace ApparelHubERP.Core.Services
                 Phone = dto.Phone,
                 Address = dto.Address,
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                ProductCategories = dto.ProductCategories,
+                AverageDeliveryDays = dto.AverageDeliveryDays,
+                MinimumOrderValue = dto.MinimumOrderValue
             };
 
             await _repository.AddAsync(supplier);
             await _repository.SaveChangesAsync();
 
-            return new SupplierResponseDto
+            return new SupplierDto
             {
                 Id = supplier.Id,
                 Name = supplier.Name,
@@ -67,19 +82,24 @@ namespace ApparelHubERP.Core.Services
                 Phone = supplier.Phone,
                 Address = supplier.Address,
                 IsActive = supplier.IsActive,
-                CreatedAt = supplier.CreatedAt
+                CreatedAt = supplier.CreatedAt,
+                ProductCategories = supplier.ProductCategories,
+                AverageDeliveryDays = supplier.AverageDeliveryDays,
+                MinimumOrderValue = supplier.MinimumOrderValue
             };
         }
 
         public async Task<bool> UpdateSupplierAsync(UpdateSupplierDto dto)
         {
             var supplier = await _repository.GetByIdAsync(dto.Id);
-            if (supplier is null) return false;
+            if (supplier == null) return false;
 
             supplier.Name = dto.Name;
             supplier.ContactPerson = dto.ContactPerson;
             supplier.Phone = dto.Phone;
             supplier.Address = dto.Address;
+            supplier.ProductCategories = dto.ProductCategories;
+            supplier.AverageDeliveryDays = dto.AverageDeliveryDays;
             supplier.UpdatedAt = DateTime.UtcNow;
 
             _repository.Update(supplier);
@@ -90,7 +110,7 @@ namespace ApparelHubERP.Core.Services
         public async Task<bool> ToggleSupplierStatusAsync(int id)
         {
             var supplier = await _repository.GetByIdAsync(id);
-            if (supplier is null) return false;
+            if (supplier == null) return false;
 
             supplier.IsActive = !supplier.IsActive;
             supplier.UpdatedAt = DateTime.UtcNow;
@@ -100,13 +120,16 @@ namespace ApparelHubERP.Core.Services
             return true;
         }
 
-        // ✅ NEW: Advanced Methods
-        public async Task<PagedResult<SupplierResponseDto>> GetFilteredAsync(SupplierFilterDto filter)
+        // ============================================================
+        // PAGINATION & FILTERING
+        // ============================================================
+
+        public async Task<PagedResult<SupplierDto>> GetFilteredAsync(SupplierFilterDto filter)
         {
             var result = await _repository.GetFilteredAsync(filter);
-            return new PagedResult<SupplierResponseDto>
+            return new PagedResult<SupplierDto>
             {
-                Items = result.Items.Select(s => new SupplierResponseDto
+                Items = [.. result.Items.Select(s => new SupplierDto
                 {
                     Id = s.Id,
                     Name = s.Name,
@@ -115,18 +138,26 @@ namespace ApparelHubERP.Core.Services
                     Phone = s.Phone,
                     Address = s.Address,
                     IsActive = s.IsActive,
-                    CreatedAt = s.CreatedAt
-                }).ToList(),
+                    IsDeleted = s.IsDeleted,
+                    CreatedAt = s.CreatedAt,
+                    ProductCategories = s.ProductCategories,
+                    AverageDeliveryDays = s.AverageDeliveryDays,
+                    MinimumOrderValue = s.MinimumOrderValue
+                })],
                 TotalCount = result.TotalCount,
                 Page = result.Page,
                 PageSize = result.PageSize
             };
         }
 
-        public async Task<IEnumerable<SupplierResponseDto>> GetDeletedAsync()
+        // ============================================================
+        // SOFT DELETE & BULK OPERATIONS
+        // ============================================================
+
+        public async Task<IEnumerable<SupplierDto>> GetDeletedAsync()
         {
             var suppliers = await _repository.GetDeletedAsync();
-            return suppliers.Select(s => new SupplierResponseDto
+            return suppliers.Select(s => new SupplierDto
             {
                 Id = s.Id,
                 Name = s.Name,
@@ -135,14 +166,16 @@ namespace ApparelHubERP.Core.Services
                 Phone = s.Phone,
                 Address = s.Address,
                 IsActive = s.IsActive,
-                CreatedAt = s.CreatedAt
+                CreatedAt = s.CreatedAt,
+                ProductCategories = s.ProductCategories,
+                AverageDeliveryDays = s.AverageDeliveryDays,
+                MinimumOrderValue = s.MinimumOrderValue
             });
         }
 
         public async Task SoftDeleteAsync(int id)
         {
-            var supplier = await _repository.GetByIdAsync(id);
-            if (supplier is null) throw new Exception("Supplier not found.");
+            var supplier = await _repository.GetByIdAsync(id) ?? throw new Exception("Supplier not found.");
             supplier.SoftDelete();
             await _repository.SaveChangesAsync();
         }
@@ -154,7 +187,7 @@ namespace ApparelHubERP.Core.Services
 
         public async Task BulkDeleteAsync(BulkOperationDto dto)
         {
-            if (dto.Ids == null || !dto.Ids.Any())
+            if (dto.Ids == null || dto.Ids.Count == 0)
                 throw new Exception("No supplier IDs provided.");
             await _repository.BulkDeleteAsync(dto.Ids);
         }

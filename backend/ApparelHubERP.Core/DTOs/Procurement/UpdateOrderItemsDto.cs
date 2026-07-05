@@ -1,7 +1,9 @@
-﻿namespace ApparelHubERP.Core.DTOs.Procurement
+﻿using System.Collections.Generic;
+
+namespace ApparelHubERP.Core.DTOs.Procurement
 {
     public class UpdateOrderItemsDto
     {
-        public List<PurchaseOrderItemDto> Items { get; set; } = new();
+        public List<PurchaseOrderItemDto> Items { get; set; } = [];
     }
 }

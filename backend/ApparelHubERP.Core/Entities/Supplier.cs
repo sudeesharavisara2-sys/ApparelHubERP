@@ -15,13 +15,59 @@ namespace ApparelHubERP.Core.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
 
-        // ✅ NEW: Soft Delete Properties
+        // ============================================================
+        // ✅ SOFT DELETE PROPERTIES
+        // ============================================================
         public bool IsDeleted { get; set; } = false;
         public DateTime? DeletedAt { get; set; }
 
+        // ============================================================
+        // ✅ NEW: SUPPLIER DETAILS FOR ADVANCED FEATURES
+        // ============================================================
+
+        /// <summary>
+        /// Types of clothing/products this supplier provides (e.g., "T-Shirts, Jeans, Dresses")
+        /// </summary>
+        public string? ProductCategories { get; set; }
+
+        /// <summary>
+        /// Primary product category (e.g., "Men's Wear", "Women's Wear")
+        /// </summary>
+        public string? PrimaryCategory { get; set; }
+
+        /// <summary>
+        /// Average delivery days for this supplier
+        /// </summary>
+        public int AverageDeliveryDays { get; set; } = 7;
+
+        /// <summary>
+        /// Minimum order value required by this supplier
+        /// </summary>
+        public decimal MinimumOrderValue { get; set; } = 0;
+
+        // ============================================================
+        // NAVIGATION PROPERTIES
+        // ============================================================
+
+        /// <summary>
+        /// Purchase orders placed with this supplier
+        /// </summary>
         public ICollection<PurchaseOrder> PurchaseOrders { get; set; } = [];
 
-        // ✅ NEW: Soft Delete Methods
+        /// <summary>
+        /// Supplier responses to purchase orders
+        /// </summary>
+        public ICollection<SupplierResponse> SupplierResponses { get; set; } = [];
+
+        /// <summary>
+        /// Performance metrics for this supplier
+        /// </summary>
+        public SupplierPerformance? Performance { get; set; }
+
+        // ============================================================
+        // SOFT DELETE METHODS
+        // ============================================================
+
         public void SoftDelete()
         {
             IsDeleted = true;

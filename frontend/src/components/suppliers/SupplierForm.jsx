@@ -8,7 +8,10 @@ const SupplierForm = ({ onSuccess }) => {
     contactPerson: '',
     email: '',
     phone: '',
-    address: ''
+    address: '',
+    productCategories: '',
+    averageDeliveryDays: 0,
+    minimumOrderValue: 0
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -19,12 +22,19 @@ const SupplierForm = ({ onSuccess }) => {
     setMessage('');
     try {
       await supplierService.create(form);
-      setForm({ name: '', contactPerson: '', email: '', phone: '', address: '' });
+      setForm({ 
+        name: '', 
+        contactPerson: '', 
+        email: '', 
+        phone: '', 
+        address: '',
+        productCategories: '',
+        averageDeliveryDays: 0,
+        minimumOrderValue: 0
+      });
       setMessage('✅ Supplier created successfully!');
       if (onSuccess) setTimeout(onSuccess, 500);
     } catch (err) {
-      // log error to avoid unused variable lint error
-      // and help with debugging
       console.error(err);
       setMessage('❌ Failed to create supplier');
     } finally {
@@ -85,6 +95,29 @@ const SupplierForm = ({ onSuccess }) => {
             onChange={e => setForm({ ...form, address: e.target.value })}
             required
           />
+          <input
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Product Categories (e.g. Fabrics, Cotton)"
+            value={form.productCategories}
+            onChange={e => setForm({ ...form, productCategories: e.target.value })}
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <input
+              type="number"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Avg Delivery Days"
+              value={form.averageDeliveryDays}
+              onChange={e => setForm({ ...form, averageDeliveryDays: parseInt(e.target.value) || 0 })}
+            />
+            <input
+              type="number"
+              step="0.01"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Min Order Value"
+              value={form.minimumOrderValue}
+              onChange={e => setForm({ ...form, minimumOrderValue: parseFloat(e.target.value) || 0 })}
+            />
+          </div>
         </div>
         <button type="submit" disabled={loading} className="btn btn-primary btn-full mt-4">
           {loading ? 'Creating...' : 'Create Supplier'}
