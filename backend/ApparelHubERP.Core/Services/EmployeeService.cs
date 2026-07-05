@@ -40,6 +40,9 @@ namespace ApparelHubERP.Core.Services
                 Address = dto.Address,
                 Department = dto.Department,
                 Role = dto.Role,
+                EPFNo = dto.EPFNo,
+                Age = dto.Age,
+                Birthday = dto.Birthday,
                 DateOfJoining = dto.DateOfJoining,
                 BasicSalary = dto.BasicSalary,
                 Status = "Active",
@@ -64,6 +67,9 @@ namespace ApparelHubERP.Core.Services
             employee.Phone = dto.Phone;
             employee.Address = dto.Address;
             employee.Department = dto.Department;
+            employee.EPFNo = dto.EPFNo;
+            employee.Age = dto.Age;
+            employee.Birthday = dto.Birthday;
             employee.DateOfJoining = dto.DateOfJoining;
             employee.BasicSalary = dto.BasicSalary;
             employee.UpdatedAt = DateTime.UtcNow;
@@ -80,14 +86,14 @@ namespace ApparelHubERP.Core.Services
             // Soft delete: deactivate instead of removing the row,
             // since Hansi's payroll module and Chamoth's analytics need historical data
             var previousStatus = employee.Status;
-            employee.Status = "Resigned";
+            employee.Status = "Deleted";
             employee.UpdatedAt = DateTime.UtcNow;
 
             _context.Set<EmployeeStatusLog>().Add(new EmployeeStatusLog
             {
                 EmployeeId = employee.Id,
                 PreviousStatus = previousStatus,
-                NewStatus = "Resigned",
+                NewStatus = "Deleted",
                 Reason = "Deactivated via DELETE endpoint",
                 ChangedAt = DateTime.UtcNow
             });
@@ -150,6 +156,15 @@ namespace ApparelHubERP.Core.Services
                 .ToListAsync();
         }
 
+        public async Task<List<EmployeeDto>> GetDeletedEmployeesAsync()
+        {
+            return await _context.Set<Employee>()
+                .Where(e => e.Status == "Deleted")
+                .OrderByDescending(e => e.UpdatedAt)
+                .Select(e => MapToDto(e))
+                .ToListAsync();
+        }
+
         private static EmployeeDto MapToDto(Employee e) => new()
         {
             Id = e.Id,
@@ -161,6 +176,9 @@ namespace ApparelHubERP.Core.Services
             Address = e.Address,
             Department = e.Department,
             Role = e.Role,
+            EPFNo = e.EPFNo,
+            Age = e.Age,
+            Birthday = e.Birthday,
             DateOfJoining = e.DateOfJoining,
             BasicSalary = e.BasicSalary,
             Status = e.Status,

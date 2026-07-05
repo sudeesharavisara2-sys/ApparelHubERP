@@ -16,5 +16,9 @@
         public string Status { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+
+        public string? EPFNo { get; set; }
+        public int? Age { get; set; }
+        public DateTime? Birthday { get; set; }
     }
 }

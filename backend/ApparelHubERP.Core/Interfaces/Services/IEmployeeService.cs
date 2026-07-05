@@ -12,5 +12,6 @@ namespace ApparelHubERP.Core.Interfaces.Services
         Task<EmployeeDto?> UpdateStatusAsync(int id, UpdateEmployeeStatusDto dto, string changedBy);
         Task<EmployeeDto?> UpdateRoleAsync(int id, UpdateEmployeeRoleDto dto);
         Task<List<object>> GetStatusLogsAsync(int employeeId);
+        Task<List<EmployeeDto>> GetDeletedEmployeesAsync();
     }
 }

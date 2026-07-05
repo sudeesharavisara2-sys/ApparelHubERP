@@ -50,5 +50,15 @@ namespace ApparelHubERP.Core.Entities
 
         // Navigation
         public ICollection<EmployeeStatusLog> StatusLogs { get; set; } = new List<EmployeeStatusLog>();
+
+        [MaxLength(20)]
+        public string? EPFNo { get; set; }
+
+        public int? Age { get; set; }
+
+        public DateTime? Birthday { get; set; }
+
+
+
     }
 }
