@@ -45,6 +45,14 @@ builder.Services.AddScoped<IInventoryService, InventoryService>(provider =>
 
 // ✅ IEmailService register
 builder.Services.AddScoped<IEmailService, EmailService>();
+// ✅ IAuthService register
+builder.Services.AddScoped<IAuthService>(provider =>
+{
+    var context = provider.GetRequiredService<ApparelHubERPContext>();
+    var configuration = provider.GetRequiredService<IConfiguration>();
+
+    return new AuthService(context, configuration);
+});
 
 var app = builder.Build();
 
