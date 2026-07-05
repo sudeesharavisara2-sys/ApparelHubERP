@@ -16,7 +16,7 @@ public class AuthService : IAuthService
     private readonly DbContext _context;
     private readonly IConfiguration _configuration;
 
-    // DbContext එක inject කරන්න (ApparelHubERPContext වෙනුවට)
+    // Injecting generic DbContext instead of hardcoded ApparelHubERPContext for better abstraction
     public AuthService(DbContext context, IConfiguration configuration)
     {
         _context = context;
@@ -25,9 +25,9 @@ public class AuthService : IAuthService
 
     public async Task<LoginResponseDto?> LoginAsync(LoginDto loginDto)
     {
-        // Users DbSet එකට access කරන්න
+        // Accessing the generic User DbSet
         var user = await _context.Set<User>()
-            .FirstOrDefaultAsync(u => u.Username == loginDto.Username);
+            .FirstOrDefaultAsync(u => u.Username == loginDto.Username || u.Email == loginDto.Username);
 
         if (user == null)
             return null;
@@ -35,7 +35,9 @@ public class AuthService : IAuthService
         if (!VerifyPassword(loginDto.Password, user.PasswordHash))
             return null;
 
-        // ✅ Email verified ද කියලා check කරන්න
+
+
+        // ✅ Check if the user's email is verified before allowing login
         if (!user.IsEmailVerified)
             return null;
 
@@ -51,29 +53,40 @@ public class AuthService : IAuthService
         };
     }
 
-    // ✅ Register method එක update කරන්න (OTP එක generate කරලා send කරන්න)
+    // ✅ Register new user, generate OTP, and trigger verification email
     public async Task<bool> RegisterAsync(RegisterDto registerDto)
     {
-        // Username එක දැනටමත් තියෙනවද check කරන්න
+        // Check if username already exists
         var existingUser = await _context.Set<User>()
             .FirstOrDefaultAsync(u => u.Username == registerDto.Username);
 
         if (existingUser != null)
-            return false; // Username already exists
+            return false;
 
-        // Email එක දැනටමත් තියෙනවද check කරන්න
+        // Check if email already exists
         var existingEmail = await _context.Set<User>()
             .FirstOrDefaultAsync(u => u.Email == registerDto.Email);
 
         if (existingEmail != null)
-            return false; // Email already exists
+            return false;
 
-        // Role එක valid ද check කරන්න
-        var validRoles = new[] { "StoreManager", "HR", "ManagerBoard", "Supplier", "Customer" };
+        // ✅ Validating the 8 new enterprise ERP roles
+        var validRoles = new[]
+        {
+            "StoreManager",
+            "Admin",
+            "HROfficer",
+            "PayrollOfficer",
+            "InventoryManager",
+            "ProcurementOfficer",
+            "SalesCashier",
+            "ExecutiveBoard"
+        };
+
         if (!validRoles.Contains(registerDto.Role))
             return false;
 
-        // ✅ OTP එක generate කරන්න
+        // ✅ Generate OTP and set 5-minute expiration
         var otp = GenerateOtp();
         var otpExpiry = DateTime.UtcNow.AddMinutes(5);
 
@@ -94,7 +107,7 @@ public class AuthService : IAuthService
         _context.Set<User>().Add(user);
         await _context.SaveChangesAsync();
 
-        // ✅ OTP එක Email එකට send කරන්න
+        // ✅ Send Registration OTP via Email
         try
         {
             var emailService = new EmailService(_configuration);
@@ -103,37 +116,31 @@ public class AuthService : IAuthService
         catch (Exception ex)
         {
             Console.WriteLine($"OTP email sending failed: {ex.Message}");
-            // Email එව්වත් නැතත් user එක save වෙනවා
         }
 
         return true;
     }
 
-    // ✅ Verify OTP method එක
+    // ✅ Verify the registration OTP code
     public async Task<bool> VerifyOtpAsync(VerifyOtpDto verifyOtpDto)
     {
-        // Email එක අනුව user එක සොයන්න
         var user = await _context.Set<User>()
             .FirstOrDefaultAsync(u => u.Email == verifyOtpDto.Email);
 
         if (user == null)
             return false;
 
-        // User එක දැනටමත් verified ද කියලා check කරන්න
         if (user.IsEmailVerified)
             return false;
 
-        // OTP එක හරිද check කරන්න
         if (user.OtpCode != verifyOtpDto.OtpCode)
             return false;
 
-        // OTP එක expire වෙලාද check කරන්න
         if (user.OtpExpiry == null || user.OtpExpiry < DateTime.UtcNow)
             return false;
 
-        // OTP එක හරි නම් verified කරන්න
         user.IsEmailVerified = true;
-        user.OtpCode = null; // OTP එක clear කරන්න
+        user.OtpCode = null;
         user.OtpExpiry = null;
         user.VerifiedAt = DateTime.UtcNow;
 
@@ -141,27 +148,23 @@ public class AuthService : IAuthService
         return true;
     }
 
-    // ✅ Forgot Password - OTP එක Email එකට send කරන්න
+    // ✅ Forgot Password - Generate and send password reset OTP
     public async Task<bool> ForgotPasswordAsync(ForgotPasswordDto forgotPasswordDto)
     {
-        // Email එක අනුව user එක සොයන්න
         var user = await _context.Set<User>()
             .FirstOrDefaultAsync(u => u.Email == forgotPasswordDto.Email);
 
         if (user == null)
-            return false; // User not found
+            return false;
 
-        // OTP එක generate කරන්න
         var otp = GenerateOtp();
         var otpExpiry = DateTime.UtcNow.AddMinutes(5);
 
-        // Reset OTP fields update කරන්න
         user.ResetOtpCode = otp;
         user.ResetOtpExpiry = otpExpiry;
 
         await _context.SaveChangesAsync();
 
-        // ✅ OTP එක Email එකට send කරන්න
         try
         {
             var emailService = new EmailService(_configuration);
@@ -176,41 +179,64 @@ public class AuthService : IAuthService
         return true;
     }
 
-    // ✅ Verify Reset OTP
+    // ✅ Verify the password reset OTP code
     public async Task<bool> VerifyResetOtpAsync(VerifyResetOtpDto verifyResetOtpDto)
     {
-        // Email එක අනුව user එක සොයන්න
         var user = await _context.Set<User>()
             .FirstOrDefaultAsync(u => u.Email == verifyResetOtpDto.Email);
 
         if (user == null)
             return false;
 
-        // Reset OTP එක හරිද check කරන්න
         if (user.ResetOtpCode != verifyResetOtpDto.OtpCode)
             return false;
 
-        // OTP එක expire වෙලාද check කරන්න
         if (user.ResetOtpExpiry == null || user.ResetOtpExpiry < DateTime.UtcNow)
             return false;
 
         return true;
     }
 
-    // ✅ Reset Password - New Password set කරන්න
+    public async Task<bool> ResendOtpAsync(string email)
+    {
+        var user = await _context.Set<User>().FirstOrDefaultAsync(u => u.Email == email);
+
+        if (user == null || user.IsEmailVerified)
+            return false;
+
+        // Generate a new OTP
+        var newOtp = GenerateOtp();
+        user.OtpCode = newOtp;
+        user.OtpExpiry = DateTime.UtcNow.AddMinutes(5);
+
+        await _context.SaveChangesAsync();
+
+        // Send the new OTP via email
+        try
+        {
+            var emailService = new EmailService(_configuration);
+            await emailService.SendOtpEmailAsync(user.Email, newOtp);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Resend OTP email failed: {ex.Message}");
+            return false;
+        }
+
+        return true;
+    }
+
+    // ✅ Reset Password - Update user credentials with new password
     public async Task<bool> ResetPasswordAsync(ResetPasswordDto resetPasswordDto)
     {
-        // Email එක අනුව user එක සොයන්න
         var user = await _context.Set<User>()
-            .FirstOrDefaultAsync(u => u.Email == resetPasswordDto.Email);
+            .FirstOrDefaultAsync(u => u.Email == resetPasswordDto.Email); 
 
         if (user == null)
             return false;
 
-        // Password එක update කරන්න
         user.PasswordHash = HashPassword(resetPasswordDto.NewPassword);
 
-        // Reset OTP fields clear කරන්න
         user.ResetOtpCode = null;
         user.ResetOtpExpiry = null;
 
@@ -218,7 +244,6 @@ public class AuthService : IAuthService
         return true;
     }
 
-    // ✅ OTP Generate කරන method එක
     private string GenerateOtp()
     {
         var random = new Random();
@@ -254,13 +279,16 @@ public class AuthService : IAuthService
     {
         return role switch
         {
+            "Admin" => "/dashboard/admin",
             "StoreManager" => "/dashboard/store-manager",
-            "HR" => "/dashboard/hr",
-            "ManagerBoard" => "/dashboard/manager-board",
-            "Supplier" => "/dashboard/supplier",
-            "Customer" => "/dashboard/customer",
+            "HROfficer" => "/dashboard/hr",
+            "PayrollOfficer" => "/dashboard/payroll",
+            "InventoryManager" => "/dashboard/inventory",
+            "ProcurementOfficer" => "/dashboard/procurement",
+            "SalesCashier" => "/dashboard/pos",
+            "ExecutiveBoard" => "/dashboard/executive",
             _ => "/dashboard"
-        };
+        }; 
     }
 
     private bool VerifyPassword(string password, string hashedPassword)

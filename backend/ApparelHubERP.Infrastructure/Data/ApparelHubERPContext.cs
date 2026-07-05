@@ -9,9 +9,10 @@ namespace ApparelHubERP.Infrastructure.Data
         {
         }
 
+        // Employee table
         public DbSet<Employee> Employees { get; set; }
 
-        // Login users
+        // User table for authentication and authorization
         public DbSet<User> Users { get; set; }
 
         // Inventory products
