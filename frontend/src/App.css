@@ -1,19 +1,10 @@
-/* ==========================================================================
-   APPARELHUB ERP - APP-WIDE LAYOUT UTILITIES
-   ========================================================================== */
-
-/* 💡 TEAM NOTE (Member 01 - Security): 
-   Use these helper classes to structure your individual modules (HR, Inventory, Sales).
-   Do not modify the main theme colors directly.
-*/
-
 /* 1. Standard Dashboard Row/Grid Wrapper */
 .erp-grid-4 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 20px;
   width: 100%;
-<<<<<<< HEAD
+  position: relative; /* Added to keep your absolute pseudo-elements contained */
 
   &::before,
   &::after {
@@ -31,7 +22,6 @@
     right: 0;
     border-right-color: var(--border);
   }
-=======
 }
 
 .erp-grid-2 {
@@ -66,5 +56,4 @@
   border-bottom: 1px solid #e2e8f0;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
->>>>>>> c0404b2fa0cf89e2042816d9d4ec6c6db5cc030d
 }

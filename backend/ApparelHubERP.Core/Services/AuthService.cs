@@ -11,25 +11,22 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace ApparelHubERP.Core.Services;
 
-public class AuthService : IAuthService
+// ✅ IDE0290: Primary constructor optimized (no redundant private fields assigned)
+public class AuthService(DbContext context, IConfiguration configuration, IEmailService emailService) : IAuthService
 {
-    private readonly DbContext _context;
-    private readonly IConfiguration _configuration;
-    private readonly IEmailService _emailService; // ✅ Injected for loose coupling
-
-    public AuthService(DbContext context, IConfiguration configuration, IEmailService emailService)
-    {
-        _context = context;
-        _configuration = configuration;
-        _emailService = emailService;
-    }
-
     public async Task<LoginResponseDto?> LoginAsync(LoginDto loginDto)
     {
-        var user = await _context.Set<User>()
+        var user = await context.Set<User>()
             .FirstOrDefaultAsync(u => u.Username == loginDto.Username || u.Email == loginDto.Username);
 
-        if (user == null || !VerifyPassword(loginDto.Password, user.PasswordHash) || !user.IsEmailVerified)
+        if (user == null)
+            return null;
+
+        if (!VerifyPassword(loginDto.Password, user.PasswordHash))
+            return null;
+
+        // ✅ Check if the user's email is verified before allowing login
+        if (!user.IsEmailVerified)
             return null;
 
         var token = GenerateJwtToken(user);
@@ -46,15 +43,21 @@ public class AuthService : IAuthService
 
     public async Task<bool> RegisterAsync(RegisterDto registerDto)
     {
-        var isDuplicate = await _context.Set<User>()
-            .AnyAsync(u => u.Username == registerDto.Username || u.Email == registerDto.Email);
+        var existingUser = await context.Set<User>()
+            .FirstOrDefaultAsync(u => u.Username == registerDto.Username);
 
-        if (isDuplicate)
+        if (existingUser != null)
             return false;
 
-        var validRoles = new HashSet<string> // ✅ O(1) Lookups instead of array iteration
+        var existingEmail = await context.Set<User>()
+            .FirstOrDefaultAsync(u => u.Email == registerDto.Email);
+
+        if (existingEmail != null)
+            return false;
+
+        var validRoles = new HashSet<string>
         {
-            "StoreManager", "Admin", "HROfficer", "PayrollOfficer", 
+            "StoreManager", "Admin", "HROfficer", "PayrollOfficer",
             "InventoryManager", "ProcurementOfficer", "SalesCashier", "ExecutiveBoard"
         };
 
@@ -62,30 +65,32 @@ public class AuthService : IAuthService
             return false;
 
         var otp = GenerateSecureOtp();
+        var otpExpiry = DateTime.UtcNow.AddMinutes(5);
+
         var user = new User
         {
             Username = registerDto.Username,
-            PasswordHash = HashPassword(registerDto.Password), // ⚠️ Consider upgrading to BCrypt/PBKDF2
+            PasswordHash = HashPassword(registerDto.Password),
             Role = registerDto.Role,
             Email = registerDto.Email,
             Phone = registerDto.Phone,
             FullName = registerDto.FullName,
             IsEmailVerified = false,
             OtpCode = otp,
-            OtpExpiry = DateTime.UtcNow.AddMinutes(5),
+            OtpExpiry = otpExpiry,
             CreatedAt = DateTime.UtcNow
         };
 
-        _context.Set<User>().Add(user);
-        await _context.SaveChangesAsync();
+        context.Set<User>().Add(user);
+        await context.SaveChangesAsync();
 
         try
         {
-            await _emailService.SendOtpEmailAsync(user.Email, otp);
+            // ✅ Decoupled: Using injected IEmailService interface
+            await emailService.SendOtpEmailAsync(user.Email, otp);
         }
         catch (Exception ex)
         {
-            // Log exception using an actual ILogger instance here
             Console.WriteLine($"OTP email sending failed: {ex.Message}");
         }
 
@@ -94,9 +99,13 @@ public class AuthService : IAuthService
 
     public async Task<bool> VerifyOtpAsync(VerifyOtpDto verifyOtpDto)
     {
-        var user = await _context.Set<User>().FirstOrDefaultAsync(u => u.Email == verifyOtpDto.Email);
+        var user = await context.Set<User>()
+            .FirstOrDefaultAsync(u => u.Email == verifyOtpDto.Email);
 
-        if (user == null || user.IsEmailVerified || user.OtpCode != verifyOtpDto.OtpCode || user.OtpExpiry < DateTime.UtcNow)
+        if (user == null || user.IsEmailVerified || user.OtpCode != verifyOtpDto.OtpCode)
+            return false;
+
+        if (user.OtpExpiry == null || user.OtpExpiry < DateTime.UtcNow)
             return false;
 
         user.IsEmailVerified = true;
@@ -104,25 +113,29 @@ public class AuthService : IAuthService
         user.OtpExpiry = null;
         user.VerifiedAt = DateTime.UtcNow;
 
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         return true;
     }
 
     public async Task<bool> ForgotPasswordAsync(ForgotPasswordDto forgotPasswordDto)
     {
-        var user = await _context.Set<User>().FirstOrDefaultAsync(u => u.Email == forgotPasswordDto.Email);
+        var user = await context.Set<User>()
+            .FirstOrDefaultAsync(u => u.Email == forgotPasswordDto.Email);
+
         if (user == null)
-            return false; // Consider returning true to prevent user enumeration attacks
+            return false;
 
         var otp = GenerateSecureOtp();
-        user.ResetOtpCode = otp;
-        user.ResetOtpExpiry = DateTime.UtcNow.AddMinutes(5);
+        var otpExpiry = DateTime.UtcNow.AddMinutes(5);
 
-        await _context.SaveChangesAsync();
+        user.ResetOtpCode = otp;
+        user.ResetOtpExpiry = otpExpiry;
+
+        await context.SaveChangesAsync();
 
         try
         {
-            await _emailService.SendResetPasswordOtpEmailAsync(user.Email, otp);
+            await emailService.SendResetPasswordOtpEmailAsync(user.Email, otp);
         }
         catch (Exception ex)
         {
@@ -135,33 +148,22 @@ public class AuthService : IAuthService
 
     public async Task<bool> VerifyResetOtpAsync(VerifyResetOtpDto verifyResetOtpDto)
     {
-        var user = await _context.Set<User>().FirstOrDefaultAsync(u => u.Email == verifyResetOtpDto.Email);
+        var user = await context.Set<User>()
+            .FirstOrDefaultAsync(u => u.Email == verifyResetOtpDto.Email);
 
-        if (user == null || user.ResetOtpCode != verifyResetOtpDto.OtpCode || user.ResetOtpExpiry < DateTime.UtcNow)
+        if (user == null || user.ResetOtpCode != verifyResetOtpDto.OtpCode)
             return false;
 
-        return true;
-    }
-
-    public async Task<bool> ResetPasswordAsync(ResetPasswordDto resetPasswordDto)
-    {
-        var user = await _context.Set<User>().FirstOrDefaultAsync(u => u.Email == resetPasswordDto.Email);
-        
-        // 🚨 CRITICAL FIX: Ensure token matches and hasn't expired before resetting password!
-        if (user == null || user.ResetOtpCode != resetPasswordDto.OtpCode || user.ResetOtpExpiry < DateTime.UtcNow)
+        if (user.ResetOtpExpiry == null || user.ResetOtpExpiry < DateTime.UtcNow)
             return false;
 
-        user.PasswordHash = HashPassword(resetPasswordDto.NewPassword);
-        user.ResetOtpCode = null;
-        user.ResetOtpExpiry = null;
-
-        await _context.SaveChangesAsync();
         return true;
     }
 
     public async Task<bool> ResendOtpAsync(string email)
     {
-        var user = await _context.Set<User>().FirstOrDefaultAsync(u => u.Email == email);
+        var user = await context.Set<User>().FirstOrDefaultAsync(u => u.Email == email);
+
         if (user == null || user.IsEmailVerified)
             return false;
 
@@ -169,11 +171,11 @@ public class AuthService : IAuthService
         user.OtpCode = newOtp;
         user.OtpExpiry = DateTime.UtcNow.AddMinutes(5);
 
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
 
         try
         {
-            await _emailService.SendOtpEmailAsync(user.Email, newOtp);
+            await emailService.SendOtpEmailAsync(user.Email, newOtp);
         }
         catch (Exception ex)
         {
@@ -184,7 +186,25 @@ public class AuthService : IAuthService
         return true;
     }
 
-    // ✅ CA1822 & Cryptographically Secure
+    // ✅ Reset Password - Update user credentials with token validation protection
+    public async Task<bool> ResetPasswordAsync(ResetPasswordDto resetPasswordDto)
+    {
+        var user = await context.Set<User>()
+            .FirstOrDefaultAsync(u => u.Email == resetPasswordDto.Email);
+
+        // 🚨 Security Fix: Added direct token verification here to verify identity before allowing rewrite
+        if (user == null || user.ResetOtpCode != resetPasswordDto.OtpCode || user.ResetOtpExpiry < DateTime.UtcNow)
+            return false;
+
+        user.PasswordHash = HashPassword(resetPasswordDto.NewPassword);
+        user.ResetOtpCode = null;
+        user.ResetOtpExpiry = null;
+
+        await context.SaveChangesAsync();
+        return true;
+    }
+
+    // ✅ CA1822: Marked as static & Cryptographically Secure
     private static string GenerateSecureOtp()
     {
         return RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
@@ -192,8 +212,8 @@ public class AuthService : IAuthService
 
     private string GenerateJwtToken(User user)
     {
-        var jwtKey = _configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not found");
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+        var securityKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not found")));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
         var claims = new[]
@@ -204,16 +224,17 @@ public class AuthService : IAuthService
         };
 
         var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],
-            audience: _configuration["Jwt:Audience"],
+            issuer: configuration["Jwt:Issuer"],
+            audience: configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration["Jwt:ExpiryMinutes"] ?? "60")), // ✅ Changed to UtcNow
+            expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(configuration["Jwt:ExpiryMinutes"] ?? "60")), // ✅ Use UtcNow for JWT standards
             signingCredentials: credentials
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
+    // ✅ CA1822: Marked as static
     private static string GetDashboardUrl(string role)
     {
         return role switch
@@ -230,11 +251,16 @@ public class AuthService : IAuthService
         };
     }
 
+    // ✅ CA1822: Marked as static
+    // ✅ CA1850: Use SHA256.HashData instead of ComputeHash
     private static bool VerifyPassword(string password, string hashedPassword)
     {
-        return HashPassword(password) == hashedPassword;
+        var hashedBytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));
+        var hash = Convert.ToBase64String(hashedBytes);
+        return hash == hashedPassword;
     }
 
+    // ✅ CA1850: Use SHA256.HashData instead of ComputeHash
     public static string HashPassword(string password)
     {
         var hashedBytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));

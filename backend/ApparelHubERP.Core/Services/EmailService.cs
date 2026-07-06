@@ -5,9 +5,14 @@ using Microsoft.Extensions.Configuration;
 
 namespace ApparelHubERP.Core.Services;
 
-public class EmailService(IConfiguration configuration) : IEmailService
+public class EmailService : IEmailService
 {
-    private readonly IConfiguration _configuration = configuration;
+    private readonly IConfiguration _configuration;
+
+    public EmailService(IConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
 
     public async Task<bool> SendOtpEmailAsync(string toEmail, string otpCode)
     {
