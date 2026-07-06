@@ -249,10 +249,7 @@ public class AuthService(DbContext context, IConfiguration configuration, IEmail
             "ExecutiveBoard" => "/dashboard/executive",
             _ => "/dashboard"
         };
-    }
 
-    // ✅ CA1822: Marked as static
-    // ✅ CA1850: Use SHA256.HashData instead of ComputeHash
     private static bool VerifyPassword(string password, string hashedPassword)
     {
         var hashedBytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));
@@ -260,7 +257,6 @@ public class AuthService(DbContext context, IConfiguration configuration, IEmail
         return hash == hashedPassword;
     }
 
-    // ✅ CA1850: Use SHA256.HashData instead of ComputeHash
     public static string HashPassword(string password)
     {
         var hashedBytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));

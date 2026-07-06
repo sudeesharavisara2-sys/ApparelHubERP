@@ -1,59 +1,129 @@
-/* 1. Standard Dashboard Row/Grid Wrapper */
-.erp-grid-4 {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
-  width: 100%;
-  position: relative; /* Added to keep your absolute pseudo-elements contained */
+/* ============================================================
+   TAILWIND DIRECTIVES
+   ============================================================ */
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    top: -4.5px;
-    border: 5px solid transparent;
-  }
+/* ============================================================
+   FONTS
+   ============================================================ */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght=400;500;600;700;800&display=swap");
 
-  &::before {
-    left: 0;
-    border-left-color: var(--border);
-  }
-  &::after {
-    right: 0;
-    border-right-color: var(--border);
-  }
+/* ============================================================
+   GLOBAL RESET & BASE
+   ============================================================ */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-.erp-grid-2 {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-  gap: 24px;
-  width: 100%;
+body {
+    font-family: "Poppins", sans-serif;
+    background: #F1F5F9; 
+    color: #0F172A;
 }
 
-/* 2. Flex Utility Helpers */
-.flex-between {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+a {
+    text-decoration: none;
 }
 
-.flex-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* ============================================================
+   LANDING / AUTH / DASHBOARD PAGES
+   ============================================================ */
+.landing-page,
+.auth-page,
+.dashboard-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: #F8FAFC; 
 }
 
-/* 3. Text Shadow for 3D Elements */
-.text-3d-glow {
-  text-shadow: 0 2px 10px rgba(19, 41, 104, 0.15);
+.landing-card,
+.auth-card,
+.dashboard-card {
+    width: 100%;
+    max-width: 460px;
+    background: #ffffff;
+    border: 1px solid #E2E8F0;
+    border-radius: 20px;
+    padding: 36px;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
 }
 
-/* 4. Common Table Header Style for Modules */
-.module-header {
-  padding: 16px 24px;
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
+.landing-card {
+    max-width: 720px;
+    text-align: center;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+    border: none;
+    outline: none;
+    padding: 14px 22px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+    font-size: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn.primary {
+    background: #EAB308; /* Yellow */
+    color: #0F172A;       
+    box-shadow: 0 8px 20px rgba(234, 179, 8, 0.25);
+}
+.btn.primary:hover {
+    background: #CA8A04;
+    transform: translateY(-1px);
+}
+
+.btn.secondary {
+    background: #0F172A; /* Dark Blue */
+    color: #ffffff;
+}
+.btn.secondary:hover {
+    background: #1E293B;
+}
+
+.btn.success {
+    background: #10B981;
+    color: white;
+    box-shadow: 0 6px 15px rgba(16, 185, 129, 0.2);
+}
+.btn.success:hover {
+    background: #059669;
+}
+
+.btn.full {
+    width: 100%;
+    justify-content: center;
+    margin-top: 12px;
+}
+
+.btn.sm {
+    padding: 8px 14px;
+    font-size: 13px;
+    border-radius: 8px;
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.fade-in {
+    animation: fadeIn 0.3s ease-out;
 }
