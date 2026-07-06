@@ -1,8 +1,7 @@
-// src/components/common/Confetti.jsx
 import { useMemo } from 'react';
-import { CORAL, GOLD, VIOLET, TEAL, SKY } from '../../theme';
+import { COLORS } from '../../../theme'; // Mapped: Go up 3 levels to reach src/theme.js
 
-const colors = [CORAL, GOLD, VIOLET, TEAL, SKY];
+const colors = [COLORS.yellow, COLORS.info, COLORS.success, COLORS.danger, "#6366F1"];
 
 const createPieces = () =>
   Array.from({ length: 26 }, () => ({

@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Search, Plus, X, Phone, Mail, MapPin } from "lucide-react";
-import { supplierService } from "../services/supplierService";
-import { useToast } from "../context/ToastContext";
-import { COLORS } from "../theme";
+import { supplierService } from "../../services/supplierService";
+import { useToast } from "../../context/ToastContext";
+import { COLORS } from "../../theme";
 
 export default function SuppliersPage() {
   const [suppliers, setSuppliers] = useState([]);
