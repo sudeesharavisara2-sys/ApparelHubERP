@@ -4,6 +4,7 @@ using ApparelHubERP.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ApparelHubERP.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApparelHubERPContext))]
-    partial class ApparelHubERPContextModelSnapshot : ModelSnapshot
+    [Migration("20260705140317_AddEmployeeExtraFieldsAndDeletedStatus")]
+    partial class AddEmployeeExtraFieldsAndDeletedStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -98,41 +101,6 @@ namespace ApparelHubERP.Infrastructure.Data.Migrations
                     b.ToTable("Employees");
                 });
 
-<<<<<<< HEAD
-            modelBuilder.Entity("ApparelHubERP.Core.Entities.Product", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Color")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Size")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Products");
-=======
             modelBuilder.Entity("ApparelHubERP.Core.Entities.EmployeeStatusLog", b =>
                 {
                     b.Property<int>("LogId")
@@ -170,7 +138,6 @@ namespace ApparelHubERP.Infrastructure.Data.Migrations
                     b.HasIndex("EmployeeId");
 
                     b.ToTable("EmployeeStatusLogs");
->>>>>>> dev-kavishka
                 });
 
             modelBuilder.Entity("ApparelHubERP.Core.Entities.User", b =>

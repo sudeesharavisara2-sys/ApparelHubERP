@@ -19,6 +19,7 @@ builder.Services.AddScoped<DbContext>(provider =>
 // Services Registration
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 
 // ✅ Added from dev-yathushiha
 builder.Services.AddScoped<IInventoryService, InventoryService>(provider =>
