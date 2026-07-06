@@ -177,7 +177,6 @@ namespace ApparelHubERP.API.Controllers
             }
         }
 
-        // ✅ NEW: Update Order Items
         [HttpPut("{id}/items")]
         public async Task<IActionResult> UpdateItems(int id, [FromBody] UpdateOrderItemsDto dto)
         {

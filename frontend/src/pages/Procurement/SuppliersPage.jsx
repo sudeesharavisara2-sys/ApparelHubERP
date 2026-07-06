@@ -17,10 +17,12 @@ export default function SuppliersPage() {
     (async () => {
       try {
         const data = await supplierService.getAll();
-        if (mounted) setSuppliers(data);
+        if (mounted) setSuppliers(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error(err);
-        showToast("❌ Failed to load suppliers");
+        if (mounted) {
+          setSuppliers([]);
+        }
       } finally {
         if (mounted) setLoading(false);
       }
@@ -57,8 +59,20 @@ export default function SuppliersPage() {
     }
   };
 
-  const filtered = suppliers.filter((s) =>
-    s.name?.toLowerCase().includes(search.toLowerCase())
+  const normalizeSupplier = (supplier) => ({
+    ...supplier,
+    id: supplier?.id ?? supplier?.Id,
+    name: supplier?.name ?? supplier?.Name,
+    email: supplier?.email ?? supplier?.Email,
+    phone: supplier?.phone ?? supplier?.Phone,
+    address: supplier?.address ?? supplier?.Address,
+    isActive: supplier?.isActive ?? supplier?.IsActive ?? true,
+  });
+
+  const normalizedSuppliers = suppliers.map(normalizeSupplier);
+
+  const filtered = normalizedSuppliers.filter((s) =>
+    (s.name || "").toLowerCase().includes(search.toLowerCase())
   );
 
   if (loading) return <div className="text-center py-12 text-slate-400">Loading suppliers...</div>;
@@ -92,14 +106,14 @@ export default function SuppliersPage() {
         {filtered.map((s) => (
           <div key={s.id} className="flex items-center gap-4 px-5 py-4">
             <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0" style={{ background: COLORS.dark }}>
-              {s.name?.slice(0, 2).toUpperCase()}
+              {(s.name || "S").slice(0, 2).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold" style={{ color: COLORS.dark }}>{s.name}</p>
+              <p className="text-sm font-semibold" style={{ color: COLORS.dark }}>{s.name || "Unnamed Supplier"}</p>
               <div className="flex flex-wrap gap-3 text-xs" style={{ color: COLORS.slateText }}>
-                <span className="flex items-center gap-1"><Mail size={11} /> {s.email}</span>
-                <span className="flex items-center gap-1"><Phone size={11} /> {s.phone}</span>
-                <span className="flex items-center gap-1"><MapPin size={11} /> {s.address}</span>
+                <span className="flex items-center gap-1"><Mail size={11} /> {s.email || "—"}</span>
+                <span className="flex items-center gap-1"><Phone size={11} /> {s.phone || "—"}</span>
+                <span className="flex items-center gap-1"><MapPin size={11} /> {s.address || "—"}</span>
               </div>
             </div>
             <button

@@ -4,7 +4,7 @@ import { ToastProvider } from "./context/ToastContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
 
-// ---- UPDATE THESE PATHS TO MATCH YOUR NEW FILE STRUCTURE ----
+// Public pages (Lazy Loading)
 const Landing = lazy(() => import("./pages/Landing"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
@@ -13,17 +13,16 @@ const VerifyOtp = lazy(() => import("./pages/VerifyOtp"));
 const VerifyResetOtp = lazy(() => import("./pages/VerifyResetOtp"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
-// Protected pages – adjust these!
+// Protected pages (Lazy Loading)
 const Dashboard = lazy(() => import("./pages/Dashboard")); 
 const ProcurementDashboard = lazy(() => import("./pages/Procurement/ProcurementDashboard"));
 const SuppliersPage = lazy(() => import("./pages/Procurement/SuppliersPage"));
 const PurchaseOrdersPage = lazy(() => import("./pages/Procurement/PurchaseOrdersPage"));
 const AlertsPage = lazy(() => import("./pages/AlertsPage"));
 
-// ❗ If AlertsPage still exists, find its new path and update this import:
-// const AlertsPage = lazy(() => import("./pages/Procurement/AlertsPage")); // old path – fix it!
-
-// If you no longer have AlertsPage, comment out the import and remove the route below.
+// 🌟 FIX: බ්ලොක් වීම වැළැක්වීමට නව පේජ් දෙක කෙලින්ම (Directly) Import කිරීම
+import SupplierResponsePortal from "./pages/Procurement/SupplierResponsePortal";
+import PriceCompareInterface from "./pages/Procurement/PriceCompareInterface";
 
 const Layout = () => (
   <Navbar>
@@ -34,7 +33,7 @@ const Layout = () => (
 function App() {
   return (
     <ToastProvider>
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<div className="text-center py-12">Loading ApparelHub Modular Grid...</div>}>
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<Landing />} />
@@ -48,11 +47,16 @@ function App() {
           {/* Protected routes */}
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            
             <Route element={<Layout />}>
               <Route path="/procurement-dashboard" element={<ProcurementDashboard />} />
               <Route path="/suppliers" element={<SuppliersPage />} />
               <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
               <Route path="/alerts" element={<AlertsPage />} />
+              
+              {/* 🌟 100% Stable Core Scope Routes */}
+              <Route path="/supplier-portal" element={<SupplierResponsePortal />} />
+              <Route path="/price-compare" element={<PriceCompareInterface />} />
             </Route>
           </Route>
 
