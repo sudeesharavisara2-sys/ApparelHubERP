@@ -268,31 +268,29 @@ public class AuthService(DbContext context, IConfiguration configuration) : IAut
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    private static string GetDashboardUrl(string role)
+    private static string GetDashboardUrl(string role) => role switch
     {
-            "Admin" => "/dashboard/admin",
-            "StoreManager" => "/dashboard/store-manager",
-            "HROfficer" => "/dashboard/hr",
-            "PayrollOfficer" => "/dashboard/payroll",
-            "InventoryManager" => "/dashboard/inventory",
-            "ProcurementOfficer" => "/dashboard/procurement",
-            "SalesCashier" => "/dashboard/pos",
-            "ExecutiveBoard" => "/dashboard/executive",
-            _ => "/dashboard"
-        }; 
+        "Admin" => "/dashboard/admin",
+        "StoreManager" => "/dashboard/store-manager",
+        "HROfficer" => "/dashboard/hr",
+        "PayrollOfficer" => "/dashboard/payroll",
+        "InventoryManager" => "/dashboard/inventory",
+        "ProcurementOfficer" => "/dashboard/procurement",
+        "SalesCashier" => "/dashboard/pos",
+        "ExecutiveBoard" => "/dashboard/executive",
+        _ => "/dashboard"
+    };
 
     private static bool VerifyPassword(string password, string hashedPassword)
     {
-        using var sha256 = SHA256.Create();
-        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+        var hashedBytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));
         var hash = Convert.ToBase64String(hashedBytes);
         return hash == hashedPassword;
     }
 
     public static string HashPassword(string password)
     {
-        using var sha256 = SHA256.Create();
-        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+        var hashedBytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));
         return Convert.ToBase64String(hashedBytes);
     }
 }
