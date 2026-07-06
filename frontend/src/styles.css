@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* ============================================================
    TAILWIND DIRECTIVES
    ============================================================ */
@@ -13,22 +14,46 @@
 /* ============================================================
    GLOBAL RESET & BASE
    ============================================================ */
+=======
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap");
+:root {
+  /* Brand Color Palette */
+  --brand-navy: #132968;           /* Primary corporate navy blue */
+  --brand-blue-glow: #1e3a8a;      /* Blue highlight for buttons */
+  --brand-khaki: #bfa37a;          /* Premium khaki accent */
+  --brand-khaki-light: #f7f4ef;    /* Light khaki background */
+
+  /* Text Colors */
+  --text-dark: #0f172a;
+  --text-muted: #64748b;
+}
+
+/* Reset default browser styles */
+>>>>>>> c0404b2fa0cf89e2042816d9d4ec6c6db5cc030d
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
+/* Global page styling */
 body {
     font-family: "Poppins", sans-serif;
+<<<<<<< HEAD
     background: #F1F5F9; /* Neutral ultra-light slate background */
     color: #0F172A;
+=======
+    background: #f1f5f9;
+    color: var(--text-dark);
+>>>>>>> c0404b2fa0cf89e2042816d9d4ec6c6db5cc030d
 }
 
+/* Remove default underline from links */
 a {
     text-decoration: none;
 }
 
+<<<<<<< HEAD
 /* ============================================================
    LANDING / AUTH / DASHBOARD PAGES (No Purple Gradients)
    ============================================================ */
@@ -138,4 +163,81 @@ a {
 }
 .fade-in {
     animation: fadeIn 0.3s ease-out;
+=======
+/* Main heading - Global Style */
+h2 {
+    font-family: "Playfair Display", serif;
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    color: var(--brand-navy);
+    letter-spacing: -0.5px;
+}
+
+/* Paragraph text - Global Style */
+p {
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 24px;
+    font-size: 14px;
+}
+
+/* Form input controls - Global Style */
+input,
+select {
+    width: 100%;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 14px;
+    outline: none;
+    font-family: inherit;
+    font-size: 14px;
+    background: #ffffff;
+    transition: all 0.25s ease;
+}
+
+/* Input focus effect */
+input:focus,
+select:focus {
+    border-color: var(--brand-navy);
+    box-shadow: 0 0 0 4px rgba(19, 41, 104, 0.12);
+}
+
+/* Primary Button Styling - Global Style */
+.btn {
+    border: none;
+    outline: none;
+    padding: 14px 22px;
+    border-radius: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 15px;
+    display: inline-block;
+    text-align: center;
+}
+
+/* Primary button with gradient */
+.btn.primary {
+    background: linear-gradient(
+        135deg,
+        var(--brand-navy) 0%,
+        var(--brand-blue-glow) 100%
+    );
+    color: white;
+    box-shadow: 0 12px 28px rgba(19, 41, 104, 0.3);
+}
+
+/* Hover animation */
+.btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 35px rgba(19, 41, 104, 0.45);
+}
+
+/* Full-width button */
+.btn.full {
+    width: 100%;
+    margin-top: 12px;
+>>>>>>> c0404b2fa0cf89e2042816d9d4ec6c6db5cc030d
 }

@@ -43,6 +43,18 @@ public class AuthController(IAuthService authService) : ControllerBase
         return Ok(new { message = "Email verified successfully! You can now login." });
     }
 
+    // ✅ Resend Registration OTP
+    [HttpPost("resend-otp")]
+    public async Task<IActionResult> ResendOtp([FromBody] ResendOtpDto dto)
+    {
+        var result = await _authService.ResendOtpAsync(dto.Email);
+
+        if (!result)
+            return BadRequest(new { message = "Failed to resend OTP. User not found." });
+
+        return Ok(new { message = "New OTP has been sent to your email." });
+    }
+
     // ✅ Forgot Password - Send OTP to Email
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto forgotPasswordDto)

@@ -1,0 +1,353 @@
+/* ==========================================================================
+   Authentication Page Background
+   ========================================================================== */
+
+.auth-page {
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+
+    background-color: #f6f8fc;
+
+    background-image:
+        radial-gradient(circle at 20% 20%, rgba(19,41,104,.18), transparent 45%),
+        radial-gradient(circle at 80% 80%, rgba(191,163,122,.20), transparent 45%),
+        linear-gradient(
+            135deg,
+            rgba(19,41,104,.05),
+            #f6f8fc 55%,
+            rgba(191,163,122,.10)
+        );
+
+    animation: backgroundFade 1s ease;
+}
+
+@keyframes backgroundFade {
+
+    from{
+        opacity:.85;
+    }
+
+    to{
+        opacity:1;
+    }
+
+}
+
+/* ==========================================================================
+   Authentication Card
+   ========================================================================== */
+
+.auth-card{
+    width:100%;
+    max-width:520px;
+
+    background:rgba(255,255,255,.96);
+
+    border-radius:28px;
+
+    padding:45px;
+
+    text-align:left;
+
+    border:1px solid rgba(255,255,255,.65);
+
+    backdrop-filter:blur(12px);
+
+    box-shadow:0 40px 90px rgba(15,23,42,.18);
+}
+
+/* ==========================================================================
+   Top Badge
+   ========================================================================== */
+
+.badge{
+
+    display:inline-block;
+
+    padding:8px 18px;
+
+    border-radius:999px;
+
+    background:#f7f4ef;
+
+    color:#7c623d;
+
+    font-size:12px;
+
+    font-weight:700;
+
+    margin-bottom:20px;
+
+    letter-spacing:.5px;
+
+}
+
+/* ==========================================================================
+   ApparelHub ERP Logo
+   ========================================================================== */
+
+.brand-logo{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:5px;
+
+    font-size:46px;
+
+    font-weight:800;
+
+    color:#132968;
+
+    letter-spacing:-1px;
+
+    margin-bottom:10px;
+
+}
+
+.brand-logo span{
+
+    color:#bfa37a;
+
+    position:relative;
+
+}
+
+.brand-logo span::after{
+
+    content:"";
+
+    position:absolute;
+
+    left:0;
+
+    bottom:-3px;
+
+    width:100%;
+
+    height:4px;
+
+    background:#bfa37a;
+
+    border-radius:99px;
+
+}
+
+.brand-logo small{
+
+    font-size:13px;
+
+    font-weight:700;
+
+    color:#fff;
+
+    background:#132968;
+
+    padding:4px 8px;
+
+    border-radius:6px;
+
+    letter-spacing:.5px;
+
+}
+
+/* ==========================================================================
+   Main Title
+   ========================================================================== */
+
+.landing-title{
+    font-family: 'Poppins', sans-serif;
+
+    font-size:34px;
+
+    font-weight:800;
+
+    color:#132968;
+
+    margin-bottom:18px;
+
+}
+
+/* ==========================================================================
+   Description
+   ========================================================================== */
+
+.landing-description{
+
+    color:#64748b;
+
+    font-size:15px;
+
+    line-height:1.8;
+
+    margin-bottom:32px;
+
+}
+
+/* ==========================================================================
+   Button Layout
+   ========================================================================== */
+
+.landing-actions{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:14px;
+
+}
+
+/* ==========================================================================
+   Primary Button
+   ========================================================================== */
+
+.btn{
+
+    display:block;
+
+    width:100%;
+
+    padding:14px;
+
+    border-radius:14px;
+
+    font-weight:700;
+
+    text-align:center;
+
+    text-decoration:none;
+
+    transition:.3s;
+
+}
+
+.btn.primary{
+
+    background:linear-gradient(
+        135deg,
+        #132968,
+        #1e3a8a
+    );
+
+    color:white;
+
+    box-shadow:0 12px 25px rgba(19,41,104,.30);
+
+}
+
+.btn.primary:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:0 18px 35px rgba(19,41,104,.40);
+
+}
+
+/* ==========================================================================
+   Secondary Button
+   ========================================================================== */
+
+.btn.secondary{
+
+    background:white;
+
+    color:#132968;
+
+    border:2px solid #132968;
+
+}
+
+.btn.secondary:hover{
+
+    background:#132968;
+
+    color:white;
+
+}
+
+/* ==========================================================================
+   Links
+   ========================================================================== */
+
+.link{
+
+    color:#132968;
+
+    font-weight:600;
+
+    text-decoration:none;
+
+}
+
+.link:hover{
+
+    color:#bfa37a;
+
+}
+
+/* ==========================================================================
+   Footer Text
+   ========================================================================== */
+
+.small-text{
+
+    margin-top:18px;
+
+    font-size:14px;
+
+    color:#64748b;
+
+}
+
+.small-text a{
+
+    color:#132968;
+
+    font-weight:700;
+
+}
+
+/* ==========================================================================
+   Messages
+   ========================================================================== */
+
+.error{
+
+    background:#fee2e2;
+
+    color:#b91c1c;
+
+    padding:12px;
+
+    border-radius:12px;
+
+    margin-bottom:15px;
+
+    font-weight:600;
+
+}
+
+.success{
+
+    background:#dcfce7;
+
+    color:#15803d;
+
+    padding:12px;
+
+    border-radius:12px;
+
+    margin-bottom:15px;
+
+    font-weight:600;
+
+}
+

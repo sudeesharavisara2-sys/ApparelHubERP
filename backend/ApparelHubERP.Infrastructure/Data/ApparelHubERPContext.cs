@@ -3,12 +3,16 @@ using ApparelHubERP.Core.Entities;
 
 namespace ApparelHubERP.Infrastructure.Data
 {
-    public class ApparelHubERPContext(DbContextOptions<ApparelHubERPContext> options) : DbContext(options)
+    public class ApparelHubERPContext : DbContext
     {
-        // ============================================================
-        // EXISTING TABLES
-        // ============================================================
+        public ApparelHubERPContext(DbContextOptions<ApparelHubERPContext> options) : base(options)
+        {
+        }
+
+        // මේකෙන් තමයි SQL Server වල Employees කියලා ටේබල් එකක් හැදෙන්නේ
         public DbSet<Employee> Employees { get; set; }
+
+        // ✅ Login සඳහා Users ටේබල් එක add කරන්න
         public DbSet<User> Users { get; set; }
 
         // ============================================================
