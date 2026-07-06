@@ -270,8 +270,6 @@ public class AuthService(DbContext context, IConfiguration configuration) : IAut
 
     private static string GetDashboardUrl(string role)
     {
-        return role switch
-        {
             "Admin" => "/dashboard/admin",
             "StoreManager" => "/dashboard/store-manager",
             "HROfficer" => "/dashboard/hr",
@@ -282,7 +280,6 @@ public class AuthService(DbContext context, IConfiguration configuration) : IAut
             "ExecutiveBoard" => "/dashboard/executive",
             _ => "/dashboard"
         }; 
-    }
 
     private static bool VerifyPassword(string password, string hashedPassword)
     {

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /* ============================================================
    TAILWIND DIRECTIVES
    ============================================================ */
@@ -9,235 +8,187 @@
 /* ============================================================
    FONTS
    ============================================================ */
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap");
 
 /* ============================================================
-   GLOBAL RESET & BASE
+   CSS VARIABLES (Brand colors)
    ============================================================ */
-=======
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap");
 :root {
-  /* Brand Color Palette */
-  --brand-navy: #132968;           /* Primary corporate navy blue */
-  --brand-blue-glow: #1e3a8a;      /* Blue highlight for buttons */
-  --brand-khaki: #bfa37a;          /* Premium khaki accent */
-  --brand-khaki-light: #f7f4ef;    /* Light khaki background */
-
-  /* Text Colors */
+  --brand-navy: #132968;
+  --brand-blue-glow: #1e3a8a;
+  --brand-khaki: #bfa37a;
+  --brand-khaki-light: #f7f4ef;
   --text-dark: #0f172a;
   --text-muted: #64748b;
 }
 
-/* Reset default browser styles */
->>>>>>> c0404b2fa0cf89e2042816d9d4ec6c6db5cc030d
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-/* Global page styling */
-body {
-    font-family: "Poppins", sans-serif;
-<<<<<<< HEAD
-    background: #F1F5F9; /* Neutral ultra-light slate background */
-    color: #0F172A;
-=======
-    background: #f1f5f9;
-    color: var(--text-dark);
->>>>>>> c0404b2fa0cf89e2042816d9d4ec6c6db5cc030d
-}
-
-/* Remove default underline from links */
-a {
-    text-decoration: none;
-}
-
-<<<<<<< HEAD
 /* ============================================================
-   LANDING / AUTH / DASHBOARD PAGES (No Purple Gradients)
+   GLOBAL RESET & BASE
+   ============================================================ */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+  background: #f1f5f9;
+  color: var(--text-dark);
+}
+
+a {
+  text-decoration: none;
+}
+
+/* Global heading and paragraph (from incoming) */
+h2 {
+  font-family: "Playfair Display", serif;
+  font-size: 32px;
+  font-weight: 800;
+  margin-bottom: 6px;
+  color: var(--brand-navy);
+  letter-spacing: -0.5px;
+}
+
+p {
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-bottom: 24px;
+  font-size: 14px;
+}
+
+/* Form inputs – global */
+input,
+select {
+  width: 100%;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  outline: none;
+  font-family: inherit;
+  font-size: 14px;
+  background: #ffffff;
+  transition: all 0.25s ease;
+}
+
+input:focus,
+select:focus {
+  border-color: var(--brand-navy);
+  box-shadow: 0 0 0 4px rgba(19, 41, 104, 0.12);
+}
+
+/* ============================================================
+   BUTTONS (Combined from both versions)
+   ============================================================ */
+.btn {
+  border: none;
+  outline: none;
+  padding: 14px 22px;
+  border-radius: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+}
+
+/* Primary – navy gradient (from incoming) */
+.btn.primary {
+  background: linear-gradient(135deg, var(--brand-navy), var(--brand-blue-glow));
+  color: white;
+  box-shadow: 0 12px 28px rgba(19, 41, 104, 0.3);
+}
+.btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 35px rgba(19, 41, 104, 0.45);
+}
+
+/* Secondary – dark blue (from HEAD) */
+.btn.secondary {
+  background: #0f172a;
+  color: #ffffff;
+}
+.btn.secondary:hover {
+  background: #1e293b;
+}
+
+/* Success & Danger (from HEAD) */
+.btn.success {
+  background: #10b981;
+  color: white;
+  box-shadow: 0 6px 15px rgba(16, 185, 129, 0.2);
+}
+.btn.success:hover {
+  background: #059669;
+}
+
+.btn.danger {
+  background: #ef4444;
+  color: white;
+}
+.btn.danger:hover {
+  background: #dc2626;
+}
+
+.btn.full {
+  width: 100%;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.btn.sm {
+  padding: 8px 14px;
+  font-size: 13px;
+  border-radius: 8px;
+}
+
+/* ============================================================
+   LANDING / AUTH / DASHBOARD PAGES (from HEAD)
    ============================================================ */
 .landing-page,
 .auth-page,
 .dashboard-page {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    background: #F8FAFC; /* Clean off-white background */
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: #f8fafc;
 }
 
 .landing-card,
 .auth-card,
 .dashboard-card {
-    width: 100%;
-    max-width: 460px;
-    background: #ffffff;
-    border: 1px solid #E2E8F0;
-    border-radius: 20px;
-    padding: 36px;
-    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
+  width: 100%;
+  max-width: 460px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 36px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
 }
 
 .landing-card {
-    max-width: 720px;
-    text-align: center;
+  max-width: 720px;
+  text-align: center;
 }
 .auth-card.large {
-    max-width: 520px;
-}
-
-/* ============================================================
-   BUTTONS (Dark Blue, Black & Yellow Match)
-   ============================================================ */
-.btn {
-    border: none;
-    outline: none;
-    padding: 14px 22px;
-    border-radius: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: 0.2s ease;
-    font-size: 15px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    text-align: center;
-}
-
-.btn.primary {
-    background: #EAB308; /* Yellow */
-    color: #0F172A;       /* Dark Blue Text */
-    box-shadow: 0 8px 20px rgba(234, 179, 8, 0.25);
-}
-.btn.primary:hover {
-    background: #CA8A04;
-    transform: translateY(-1px);
-}
-
-.btn.secondary {
-    background: #0F172A; /* Dark Blue */
-    color: #ffffff;
-}
-.btn.secondary:hover {
-    background: #1E293B;
-}
-
-.btn.success {
-    background: #10B981;
-    color: white;
-    box-shadow: 0 6px 15px rgba(16, 185, 129, 0.2);
-}
-.btn.success:hover {
-    background: #059669;
-}
-
-.btn.danger {
-    background: #EF4444;
-    color: white;
-}
-.btn.danger:hover {
-    background: #DC2626;
-}
-
-.btn.full {
-    width: 100%;
-    justify-content: center;
-    margin-top: 12px;
-}
-
-.btn.sm {
-    padding: 8px 14px;
-    font-size: 13px;
-    border-radius: 8px;
+  max-width: 520px;
 }
 
 /* ============================================================
    ANIMATIONS
    ============================================================ */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 .fade-in {
-    animation: fadeIn 0.3s ease-out;
-=======
-/* Main heading - Global Style */
-h2 {
-    font-family: "Playfair Display", serif;
-    font-size: 32px;
-    font-weight: 800;
-    margin-bottom: 6px;
-    color: var(--brand-navy);
-    letter-spacing: -0.5px;
-}
-
-/* Paragraph text - Global Style */
-p {
-    color: var(--text-muted);
-    line-height: 1.7;
-    margin-bottom: 24px;
-    font-size: 14px;
-}
-
-/* Form input controls - Global Style */
-input,
-select {
-    width: 100%;
-    padding: 14px 16px;
-    margin-bottom: 14px;
-    border: 1px solid #cbd5e1;
-    border-radius: 14px;
-    outline: none;
-    font-family: inherit;
-    font-size: 14px;
-    background: #ffffff;
-    transition: all 0.25s ease;
-}
-
-/* Input focus effect */
-input:focus,
-select:focus {
-    border-color: var(--brand-navy);
-    box-shadow: 0 0 0 4px rgba(19, 41, 104, 0.12);
-}
-
-/* Primary Button Styling - Global Style */
-.btn {
-    border: none;
-    outline: none;
-    padding: 14px 22px;
-    border-radius: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    font-size: 15px;
-    display: inline-block;
-    text-align: center;
-}
-
-/* Primary button with gradient */
-.btn.primary {
-    background: linear-gradient(
-        135deg,
-        var(--brand-navy) 0%,
-        var(--brand-blue-glow) 100%
-    );
-    color: white;
-    box-shadow: 0 12px 28px rgba(19, 41, 104, 0.3);
-}
-
-/* Hover animation */
-.btn.primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 16px 35px rgba(19, 41, 104, 0.45);
-}
-
-/* Full-width button */
-.btn.full {
-    width: 100%;
-    margin-top: 12px;
->>>>>>> c0404b2fa0cf89e2042816d9d4ec6c6db5cc030d
+  animation: fadeIn 0.3s ease-out;
 }
