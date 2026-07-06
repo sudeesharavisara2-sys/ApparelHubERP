@@ -1,14 +1,8 @@
-<<<<<<< HEAD
 import { useState, useEffect } from "react";
 import { Truck, ClipboardList, Check, PackageCheck, ChevronRight } from "lucide-react";
 import { purchaseOrderService } from "../services/purchaseOrderService";
 import { supplierService } from "../services/supplierService";
 import { COLORS } from "../theme";
-=======
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import "./AuthCommon.css";
->>>>>>> c0404b2fa0cf89e2042816d9d4ec6c6db5cc030d
 
 export const StatCard = ({ label, value, icon: Icon, color }) => {
   return (
