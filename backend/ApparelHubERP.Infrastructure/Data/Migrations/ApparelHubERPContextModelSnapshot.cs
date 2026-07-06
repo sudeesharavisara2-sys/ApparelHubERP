@@ -23,228 +23,227 @@ namespace ApparelHubERP.Infrastructure.Data.Migrations
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("ApparelHubERP.Core.Entities.Employee", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Address")
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
+                b.Property<string>("Address")
+                    .HasMaxLength(250)
+                    .HasColumnType("nvarchar(250)");
 
-                    b.Property<int?>("Age")
-                        .HasColumnType("int");
+                b.Property<int?>("Age")
+                    .HasColumnType("int");
 
-                    b.Property<decimal>("BasicSalary")
-                        .HasColumnType("decimal(18,2)");
+                b.Property<decimal>("BasicSalary")
+                    .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime?>("Birthday")
-                        .HasColumnType("datetime2");
+                b.Property<DateTime?>("Birthday")
+                    .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                b.Property<DateTime>("CreatedAt")
+                    .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("DateOfJoining")
-                        .HasColumnType("datetime2");
+                b.Property<DateTime?>("DateOfJoining")
+                    .HasColumnType("datetime2");
 
-                    b.Property<string>("Department")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                b.Property<string>("Department")
+                    .HasMaxLength(50)
+                    .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("EPFNo")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                b.Property<string>("EPFNo")
+                    .HasMaxLength(20)
+                    .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                b.Property<string>("Email")
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("NIC")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                b.Property<string>("NIC")
+                    .HasMaxLength(20)
+                    .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                b.Property<string>("Name")
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("Phone")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                b.Property<string>("Phone")
+                    .HasMaxLength(20)
+                    .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Position")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                b.Property<string>("Position")
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                b.Property<string>("Role")
+                    .IsRequired()
+                    .HasMaxLength(30)
+                    .HasColumnType("nvarchar(30)");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                b.Property<string>("Status")
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .HasColumnType("nvarchar(20)");
 
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
+                b.Property<DateTime?>("UpdatedAt")
+                    .HasColumnType("datetime2");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.ToTable("Employees");
-                });
+                b.ToTable("Employees");
+            });
 
-<<<<<<< HEAD
             modelBuilder.Entity("ApparelHubERP.Core.Entities.Product", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                b.Property<string>("Category")
+                    .IsRequired()
+                    .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Color")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                b.Property<string>("Color")
+                    .IsRequired()
+                    .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                b.Property<string>("Name")
+                    .IsRequired()
+                    .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
+                b.Property<decimal>("Price")
+                    .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
+                b.Property<int>("Quantity")
+                    .HasColumnType("int");
 
-                    b.Property<string>("Size")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                b.Property<string>("Size")
+                    .IsRequired()
+                    .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.ToTable("Products");
-=======
+                b.ToTable("Products");
+            });
+
             modelBuilder.Entity("ApparelHubERP.Core.Entities.EmployeeStatusLog", b =>
-                {
-                    b.Property<int>("LogId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+            {
+                b.Property<int>("LogId")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LogId"));
+                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LogId"));
 
-                    b.Property<DateTime>("ChangedAt")
-                        .HasColumnType("datetime2");
+                b.Property<DateTime>("ChangedAt")
+                    .HasColumnType("datetime2");
 
-                    b.Property<string>("ChangedBy")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                b.Property<string>("ChangedBy")
+                    .HasMaxLength(50)
+                    .HasColumnType("nvarchar(50)");
 
-                    b.Property<int>("EmployeeId")
-                        .HasColumnType("int");
+                b.Property<int>("EmployeeId")
+                    .HasColumnType("int");
 
-                    b.Property<string>("NewStatus")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                b.Property<string>("NewStatus")
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("PreviousStatus")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                b.Property<string>("PreviousStatus")
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Reason")
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
+                b.Property<string>("Reason")
+                    .HasMaxLength(250)
+                    .HasColumnType("nvarchar(250)");
 
-                    b.HasKey("LogId");
+                b.HasKey("LogId");
 
-                    b.HasIndex("EmployeeId");
+                b.HasIndex("EmployeeId");
 
-                    b.ToTable("EmployeeStatusLogs");
->>>>>>> dev-kavishka
-                });
+                b.ToTable("EmployeeStatusLogs");
+            });
 
             modelBuilder.Entity("ApparelHubERP.Core.Entities.User", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                b.Property<DateTime>("CreatedAt")
+                    .HasColumnType("datetime2");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                b.Property<string>("Email")
+                    .IsRequired()
+                    .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("FullName")
-                        .HasColumnType("nvarchar(max)");
+                b.Property<string>("FullName")
+                    .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsEmailVerified")
-                        .HasColumnType("bit");
+                b.Property<bool>("IsEmailVerified")
+                    .HasColumnType("bit");
 
-                    b.Property<string>("OtpCode")
-                        .HasColumnType("nvarchar(max)");
+                b.Property<string>("OtpCode")
+                    .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("OtpExpiry")
-                        .HasColumnType("datetime2");
+                b.Property<DateTime?>("OtpExpiry")
+                    .HasColumnType("datetime2");
 
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                b.Property<string>("PasswordHash")
+                    .IsRequired()
+                    .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Phone")
-                        .HasColumnType("nvarchar(max)");
+                b.Property<string>("Phone")
+                    .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ResetOtpCode")
-                        .HasColumnType("nvarchar(max)");
+                b.Property<string>("ResetOtpCode")
+                    .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("ResetOtpExpiry")
-                        .HasColumnType("datetime2");
+                b.Property<DateTime?>("ResetOtpExpiry")
+                    .HasColumnType("datetime2");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                b.Property<string>("Role")
+                    .IsRequired()
+                    .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                b.Property<string>("Username")
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .HasColumnType("nvarchar(100)");
 
-                    b.Property<DateTime?>("VerifiedAt")
-                        .HasColumnType("datetime2");
+                b.Property<DateTime?>("VerifiedAt")
+                    .HasColumnType("datetime2");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.ToTable("Users");
-                });
+                b.ToTable("Users");
+            });
 
             modelBuilder.Entity("ApparelHubERP.Core.Entities.EmployeeStatusLog", b =>
-                {
-                    b.HasOne("ApparelHubERP.Core.Entities.Employee", "Employee")
-                        .WithMany("StatusLogs")
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+            {
+                b.HasOne("ApparelHubERP.Core.Entities.Employee", "Employee")
+                    .WithMany("StatusLogs")
+                    .HasForeignKey("EmployeeId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
 
-                    b.Navigation("Employee");
-                });
+                b.Navigation("Employee");
+            });
 
             modelBuilder.Entity("ApparelHubERP.Core.Entities.Employee", b =>
-                {
-                    b.Navigation("StatusLogs");
-                });
+            {
+                b.Navigation("StatusLogs");
+            });
 #pragma warning restore 612, 618
         }
     }
