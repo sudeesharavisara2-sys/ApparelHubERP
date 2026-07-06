@@ -102,7 +102,13 @@ public class AuthService(DbContext context, IConfiguration configuration, IEmail
         var user = await context.Set<User>()
             .FirstOrDefaultAsync(u => u.Email == verifyOtpDto.Email);
 
-        if (user == null || user.IsEmailVerified || user.OtpCode != verifyOtpDto.OtpCode)
+        if (user == null)
+            return false;
+
+        if (user.IsEmailVerified)
+            return false;
+
+        if (user.OtpCode != verifyOtpDto.OtpCode)
             return false;
 
         if (user.OtpExpiry == null || user.OtpExpiry < DateTime.UtcNow)
