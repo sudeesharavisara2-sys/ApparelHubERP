@@ -7,7 +7,8 @@ namespace ApparelHubERP.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "ProcurementOfficer,ManagerBoard,Admin")]
+    // 🌟 1. මෙතනට ඔයාගේ ඇත්තම රෝල් එක වෙන ProcurementOfficer ඇතුළු හැම එකම එකතු කළා
+    [Authorize(Roles = "ProcurementOfficer,ManagerBoard,Admin,CPO,Manager,Buyer")]
     public class PurchaseOrderController(IPurchaseOrderService poService) : ControllerBase
     {
         private readonly IPurchaseOrderService _poService = poService;
@@ -50,7 +51,7 @@ namespace ApparelHubERP.API.Controllers
         }
 
         [HttpGet("supplier/{supplierId}")]
-        [Authorize(Roles = "Supplier")]
+        [Authorize(Roles = "Supplier,Admin,ProcurementOfficer")]
         public async Task<IActionResult> GetBySupplier(int supplierId)
         {
             var orders = await _poService.GetOrdersBySupplierAsync(supplierId);
@@ -72,6 +73,8 @@ namespace ApparelHubERP.API.Controllers
         }
 
         [HttpPut("{id}/status")]
+        // 🌟 ProcurementOfficer හට ස්ටේටස් වෙනස් කිරීමට (Approve කිරීමට) අවසර දීම
+        [Authorize(Roles = "ProcurementOfficer,ManagerBoard,Admin,CPO,Manager")]
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdatePurchaseOrderStatusDto dto)
         {
             try
@@ -119,6 +122,7 @@ namespace ApparelHubERP.API.Controllers
 
         // ✅ NEW: Soft Delete
         [HttpDelete("{id}")]
+        [Authorize(Roles = "ProcurementOfficer,ManagerBoard,Admin")]
         public async Task<IActionResult> SoftDelete(int id)
         {
             try
@@ -134,6 +138,7 @@ namespace ApparelHubERP.API.Controllers
 
         // ✅ NEW: Restore
         [HttpPatch("{id}/restore")]
+        [Authorize(Roles = "ProcurementOfficer,ManagerBoard,Admin")]
         public async Task<IActionResult> Restore(int id)
         {
             try
@@ -149,6 +154,7 @@ namespace ApparelHubERP.API.Controllers
 
         // ✅ NEW: Bulk Delete
         [HttpDelete("bulk-delete")]
+        [Authorize(Roles = "ProcurementOfficer,ManagerBoard,Admin")]
         public async Task<IActionResult> BulkDelete([FromBody] BulkOperationDto dto)
         {
             try
@@ -164,6 +170,7 @@ namespace ApparelHubERP.API.Controllers
 
         // ✅ NEW: Cancel Order
         [HttpPost("{id}/cancel")]
+        [Authorize(Roles = "ProcurementOfficer,ManagerBoard,Admin")]
         public async Task<IActionResult> Cancel(int id)
         {
             try
@@ -177,7 +184,9 @@ namespace ApparelHubERP.API.Controllers
             }
         }
 
+        // ✅ NEW: Update Order Items
         [HttpPut("{id}/items")]
+        [Authorize(Roles = "ProcurementOfficer,ManagerBoard,Admin")]
         public async Task<IActionResult> UpdateItems(int id, [FromBody] UpdateOrderItemsDto dto)
         {
             try
@@ -193,6 +202,7 @@ namespace ApparelHubERP.API.Controllers
 
         // ✅ NEW: Remove Item
         [HttpDelete("{orderId}/items/{itemId}")]
+        [Authorize(Roles = "ProcurementOfficer,ManagerBoard,Admin")]
         public async Task<IActionResult> RemoveItem(int orderId, int itemId)
         {
             try
