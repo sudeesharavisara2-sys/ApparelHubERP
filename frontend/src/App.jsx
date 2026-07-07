@@ -1,13 +1,14 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import Landing from "./pages/Landing";
-import Login from "./pages/Login";
+import { Login } from "./pages/Login"; // 👈 Cleaned up named import
 import Register from "./pages/Register";
 import VerifyOtp from "./pages/VerifyOtp";
 import ForgotPassword from "./pages/ForgotPassword";
 import VerifyResetOtp from "./pages/VerifyResetOtp";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
+import HRDashboard from "./pages/HR/HRDashboard"; 
 
 function App() {
     return (
@@ -20,6 +21,7 @@ function App() {
             <Route path="/verify-reset-otp" element={<VerifyResetOtp />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/hr-dashboard" element={<HRDashboard />} />
             <Route path="*" element={<Navigate to="/" />} />
         </Routes>
     );
