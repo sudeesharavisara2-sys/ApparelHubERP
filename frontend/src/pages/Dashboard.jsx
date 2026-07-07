@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "./AuthCommon.css";
@@ -6,8 +7,19 @@ function Dashboard() {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
 
+    // ⚠️ ආරක්ෂිත පියවර: පරිශීලකයාගේ Role එක අනුව Auto-Redirect කිරීම
+    useEffect(() => {
+        if (user) {
+            const role = user.role;
+            if (role === "HROfficer" || role === "HR" || role === "Admin" || role === "Senior HR Officer") {
+                navigate("/hr-dashboard");
+            }
+        } else {
+            navigate("/login");
+        }
+    }, [user, navigate]);
+
     if (!user) {
-        navigate("/login");
         return null;
     }
 

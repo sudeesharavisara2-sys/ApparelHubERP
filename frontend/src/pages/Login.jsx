@@ -5,7 +5,8 @@ import { useAuth } from "../context/AuthContext";
 import Logo from "../components/Logo"; 
 import "./AuthCommon.css";
 
-function Login() {
+// Named Export භාවිතා කර ඇත
+export function Login() {
     const navigate = useNavigate();
     const { saveUser } = useAuth();
     const [form, setForm] = useState({ username: "", password: "" });
@@ -21,11 +22,26 @@ function Login() {
         setLoading(true);
         try {
             const res = await login(form);
-            saveUser(res.data);
-            navigate("/dashboard");
+            saveUser(res.data); 
+
+            // API Response එකෙන් හෝ User Object එකෙන් Role එක ලබා ගැනීම
+            const userRole = res.data?.role || res.data?.user?.role; 
+
+            // ⚠️ "HROfficer" ඇතුළු සියලුම HR භූමිකාවන් මෙතනින් පරීක්ෂා කරයි
+            if (
+                userRole === "Admin" || 
+                userRole === "HR" || 
+                userRole === "HROfficer" || 
+                userRole === "Senior HR Officer"
+            ) {
+                navigate("/hr-dashboard"); 
+            } else {
+                navigate("/dashboard"); 
+            }
+            
         } catch (err) {
             setMessage(err.response?.data?.message || "Login failed. Check your connection.");
-        }finally {
+        } finally {
             setLoading(false); 
         }
     };
@@ -35,37 +51,49 @@ function Login() {
             <form className="auth-card" onSubmit={handleLogin}>
                 <div style={{ textAlign: "center" }}><Logo /></div>
                 
-                <br></br>
-                 <h2
-                    style={{
-                        fontSize: "26px",
-                        marginBottom: "2px",
-                    }}
-                >Welcome Back</h2>
+                <br />
+                <h2 style={{ fontSize: "26px", marginBottom: "2px" }}>Welcome Back</h2>
                 
                 {message && <div className="error">{message}</div>}
-<br></br>
+                <br />
+                
                 <label>Username</label>
-                <input type="text" name="username" placeholder="Username" onChange={handleChange} autoComplete="username" required />
+                <input 
+                    type="text" 
+                    name="username" 
+                    placeholder="Username" 
+                    onChange={handleChange} 
+                    autoComplete="username" 
+                    required 
+                />
 
                 <label>Password</label>
                 <div style={{ position: 'relative' }}>
-                    <input type={showPassword ? "text" : "password"} name="password" placeholder="••••••••" onChange={handleChange} autoComplete="current-password" required />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '10px', top: '10px', border: 'none', background: 'none', cursor: 'pointer' }}>
+                    <input 
+                        type={showPassword ? "text" : "password"} 
+                        name="password" 
+                        placeholder="••••••••" 
+                        onChange={handleChange} 
+                        autoComplete="current-password" 
+                        required 
+                    />
+                    <button 
+                        type="button" 
+                        onClick={() => setShowPassword(!showPassword)} 
+                        style={{ position: 'absolute', right: '10px', top: '10px', border: 'none', background: 'none', cursor: 'pointer' }}
+                    >
                         {showPassword ? "HIDE" : "SHOW"}
                     </button>
                 </div>
-<br></br>
+                <br />
+                
                 <Link to="/forgot-password" className="link">Forgot password?</Link>
                 
                 <button type="submit" className="btn primary full" disabled={loading}>
                     {loading ? "Signing In..." : "Sign In"}
                 </button>
-               <p></p>
-                <p
-                    className="small-text"
-                    style={{ marginTop: "12px" }}
-                >
+                
+                <p style={{ marginTop: "12px" }} className="small-text">
                     Don't have an account?{" "}
                     <Link to="/register">Create account</Link>
                 </p>
@@ -73,5 +101,3 @@ function Login() {
         </div>
     );
 }
-
-export default Login;
