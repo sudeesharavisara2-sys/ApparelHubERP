@@ -9,6 +9,9 @@ import VerifyResetOtp from "./pages/VerifyResetOtp";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 
+// Import your POS component from the capitalized folder
+import PosDashboard from "./pages/POS/PosDashboard"; 
+
 function App() {
     return (
         <Routes>
@@ -20,6 +23,10 @@ function App() {
             <Route path="/verify-reset-otp" element={<VerifyResetOtp />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            
+            {/* Route for your POS UI modules */}
+            <Route path="/dashboard/pos" element={<PosDashboard />} />
+            
             <Route path="*" element={<Navigate to="/" />} />
         </Routes>
     );
