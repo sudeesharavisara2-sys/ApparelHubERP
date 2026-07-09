@@ -117,5 +117,23 @@ public class InventoryService : IInventoryService
             Price = p.Price
         }).ToList();
     }
-  
+    public async Task<ProductDto?> GetProductByIdAsync(int id)
+    {
+        var product = await _context.Set<Product>().FindAsync(id);
+
+        if (product == null)
+            return null;
+
+        return new ProductDto
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Category = product.Category,
+            Size = product.Size,
+            Color = product.Color,
+            Quantity = product.Quantity,
+            Price = product.Price
+        };
+    }
+
 }

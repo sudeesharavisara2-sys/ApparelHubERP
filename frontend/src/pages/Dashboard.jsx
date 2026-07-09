@@ -1,15 +1,20 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import "./AuthCommon.css";
 
 function Dashboard() {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
 
-    if (!user) {
-        navigate("/login");
-        return null;
-    }
+    useEffect(() => {
+        if (!user) {
+            navigate("/login");
+        } else if (user.dashboardUrl) {
+            navigate(user.dashboardUrl);
+        }
+    }, [user, navigate]);
+
+    if (!user) return null;
 
     const handleLogout = () => {
         logout();

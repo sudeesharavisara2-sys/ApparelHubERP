@@ -21,8 +21,9 @@ function Login() {
         setLoading(true);
         try {
             const res = await login(form);
+            console.log(res.data);
             saveUser(res.data);
-            navigate("/dashboard");
+            navigate(res.data.dashboardUrl);
         } catch (err) {
             setMessage(err.response?.data?.message || "Login failed. Check your connection.");
         }finally {

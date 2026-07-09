@@ -8,7 +8,10 @@ import ForgotPassword from "./pages/ForgotPassword";
 import VerifyResetOtp from "./pages/VerifyResetOtp";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
-
+import InventoryDashboard from "./pages/Inventory/InventoryDashboard";
+import AddProduct from "./pages/Inventory/AddProduct";
+import EditProduct from "./pages/Inventory/EditProduct";
+import ProtectedRoute from "./components/ProtectedRoute";
 function App() {
     return (
         <Routes>
@@ -20,7 +23,31 @@ function App() {
             <Route path="/verify-reset-otp" element={<VerifyResetOtp />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route
+                path="/inventory"
+                element={
+                   <ProtectedRoute>
+                       <InventoryDashboard />
+                   </ProtectedRoute>
+                }
+           />
             <Route path="*" element={<Navigate to="/" />} />
+            <Route
+               path="/inventory/add"
+               element={
+                   <ProtectedRoute>
+                      <AddProduct />
+                   </ProtectedRoute>
+               }
+           />
+            <Route
+               path="/inventory/edit/:id"
+               element={
+                   <ProtectedRoute>
+                      <EditProduct />
+                   </ProtectedRoute>
+               }
+           />
         </Routes>
     );
 }

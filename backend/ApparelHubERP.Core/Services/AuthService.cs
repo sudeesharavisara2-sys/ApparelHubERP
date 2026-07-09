@@ -283,7 +283,7 @@ public class AuthService : IAuthService
             "StoreManager" => "/dashboard/store-manager",
             "HROfficer" => "/dashboard/hr",
             "PayrollOfficer" => "/dashboard/payroll",
-            "InventoryManager" => "/dashboard/inventory",
+            "InventoryManager" => "/inventory",
             "ProcurementOfficer" => "/dashboard/procurement",
             "SalesCashier" => "/dashboard/pos",
             "ExecutiveBoard" => "/dashboard/executive",
