@@ -1,0 +1,70 @@
+# ─── Spring Boot Generated ──────────────────────────────────────
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# ─── Sensitive Configuration (JANGAN DI-COMMIT!) ────────────────
+# File ini berisi kredensial database & JWT secret.
+# Gunakan application.properties sebagai template,
+# salin ke application.properties dan isi kredensial lokal Anda.
+src/main/resources/application.properties
+application-local.properties
+src/main/resources/application-local.properties
+
+# ─── Data SQL Sensitif ───────────────────────────────────────────
+# File ini berisi data produksi / password asli — jangan expose
+ERP_System_Data.sql
+fix_passwords.sql
+*.sql.bak
+
+# ─── Logs ────────────────────────────────────────────────────────
+logs/
+*.log
+spring.log
+
+# ─── Environment Variables ───────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ─── IDE: Spring Tool Suite (STS) ───────────────────────────────
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# ─── IDE: IntelliJ IDEA ──────────────────────────────────────────
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# ─── IDE: NetBeans ───────────────────────────────────────────────
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# ─── IDE: VS Code ────────────────────────────────────────────────
+.vscode/settings.json
+.vscode/launch.json
+.vscode/extensions.json
+
+# ─── OS Files ────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
